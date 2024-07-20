@@ -1,0 +1,5 @@
+{
+    "require": {
+        "krlove/eloquent-model-generator": "^2.0"
+    }
+}
