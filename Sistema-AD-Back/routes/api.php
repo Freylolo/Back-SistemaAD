@@ -1,4 +1,8 @@
 <?php
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\AlicuotaController;
+use App\Http\Controllers\EventoController;
+use App\Http\Controllers\ResidenteController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -13,7 +17,38 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+// Ruta para Login
+Route::post('/login', [AuthController::class, 'login']);
 
+// Rutas para UsuarioController
+Route::get('/usuarios', [UsuarioController::class, 'index']);
+Route::get('/usuarios/{id}', [UsuarioController::class, 'show']);
+Route::post('/usuarios', [UsuarioController::class, 'store']);
+Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
+Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
+
+// Rutas para AlicuotaController
+Route::get('/alicuotas', [AlicuotaController::class, 'index']);
+Route::get('/alicuotas/{id}', [AlicuotaController::class, 'show']);
+Route::post('/alicuotas', [AlicuotaController::class, 'store']);
+Route::put('/alicuotas/{id}', [AlicuotaController::class, 'update']);
+Route::delete('/alicuotas/{id}', [AlicuotaController::class, 'destroy']);
+
+// Rutas para EventoController
+Route::get('/eventos', [EventoController::class, 'index']);
+Route::get('/eventos/{id}', [EventoController::class, 'show']);
+Route::post('/eventos', [EventoController::class, 'store']);
+Route::put('/eventos/{id}', [EventoController::class, 'update']);
+Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
+
+// Rutas para ResidenteController
+Route::get('/residentes', [ResidenteController::class, 'index']);
+Route::get('/residentes/{id}', [ResidenteController::class, 'show']);
+Route::post('/residentes', [ResidenteController::class, 'store']);
+Route::put('/residentes/{id}', [ResidenteController::class, 'update']);
+Route::delete('/residentes/{id}', [ResidenteController::class, 'destroy']);
+
+// Ruta para obtener el usuario autenticado
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
