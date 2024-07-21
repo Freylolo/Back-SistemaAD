@@ -3,6 +3,8 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AlicuotaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\ResidenteController;
+use App\Http\Controllers\PersonalController;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,13 @@ Route::post('/usuarios', [UsuarioController::class, 'store']);
 Route::put('/usuarios/{id}', [UsuarioController::class, 'update']);
 Route::delete('/usuarios/{id}', [UsuarioController::class, 'destroy']);
 
+// Rutas para PersonalController
+Route::get('/personal', [PersonalController::class, 'index']);
+Route::get('/personal/{id}', [PersonalController::class, 'show']);
+Route::post('/personal', [PersonalController::class, 'store']);
+Route::put('/personal/{id}', [PersonalController::class, 'update']);
+Route::delete('/personal/{id}', [PersonalController::class, 'destroy']);
+
 // Rutas para AlicuotaController
 Route::get('/alicuotas', [AlicuotaController::class, 'index']);
 Route::get('/alicuotas/{id}', [AlicuotaController::class, 'show']);
@@ -47,6 +56,12 @@ Route::get('/residentes/{id}', [ResidenteController::class, 'show']);
 Route::post('/residentes', [ResidenteController::class, 'store']);
 Route::put('/residentes/{id}', [ResidenteController::class, 'update']);
 Route::delete('/residentes/{id}', [ResidenteController::class, 'destroy']);
+
+// Ruta para verificar la cedula
+Route::get('/residentes/check-cedula/{cedula}', [ResidenteController::class, 'checkCedula']);
+
+// Ruta para verificar correo_electronico
+Route::get('/residentes/check-correo/{correo_electronico}', [ResidenteController::class, 'checkCorreo']);
 
 // Ruta para obtener el usuario autenticado
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $sexo
  * @property string $perfil
  * @property string $direccion
+ * @property string $solar
+ * @property string $m2
  * @property string $celular
  * @property string|null $correo_electronico
  * @property int $cantidad_vehiculos
@@ -51,6 +53,8 @@ class Residente extends Model
 		'sexo',
 		'perfil',
 		'direccion',
+		'solar' ,
+		'm2' ,
 		'celular',
 		'correo_electronico',
 		'cantidad_vehiculos',

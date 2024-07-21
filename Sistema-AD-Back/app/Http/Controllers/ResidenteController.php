@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Residente;
+use Illuminate\Support\Facades\Hash;
+
 
 
 use Illuminate\Http\Request;
@@ -36,6 +38,8 @@ class ResidenteController extends Controller
             'sexo' => 'required|string|max:10',
             'perfil' => 'required|string|max:255',
             'direccion' => 'required|string|max:255',
+            'solar' => 'sometimes|required|string|max:255',
+            'm2' => 'sometimes|required|numeric|min:0',
             'celular' => 'required|string|max:20',
             'correo_electronico' => 'required|string|email|max:255|unique:residentes',
             'cantidad_vehiculos' => 'required|integer',
@@ -50,6 +54,7 @@ class ResidenteController extends Controller
 
         $residente = Residente::create($request->all());
         return response()->json($residente, 201);
+        
     }
 
     /**
@@ -81,6 +86,8 @@ class ResidenteController extends Controller
             'sexo' => 'sometimes|required|string|max:10',
             'perfil' => 'sometimes|required|string|max:255',
             'direccion' => 'sometimes|required|string|max:255',
+            'solar' => 'sometimes|required|string|max:255',
+            'sometimes|required|numeric|min:0',
             'celular' => 'sometimes|required|string|max:20',
             'correo_electronico' => 'sometimes|required|string|email|max:255|unique:residentes,correo_electronico,' . $id . ',id_residente',
             'cantidad_vehiculos' => 'sometimes|required|integer',
@@ -105,5 +112,17 @@ class ResidenteController extends Controller
     {
         Residente::destroy($id);
         return response()->json(null, 204);
+    }
+
+    public function checkCedula($cedula)
+    {
+    $exists = Residente::where('cedula', $cedula)->exists();
+    return response()->json(['exists' => $exists]);
+    }
+
+    public function checkCorreo($correo_electronico)
+    {
+        $exists = Residente::where('correo_electronico', $correo_electronico)->exists();
+        return response()->json(['exists' => $exists]);
     }
 }
