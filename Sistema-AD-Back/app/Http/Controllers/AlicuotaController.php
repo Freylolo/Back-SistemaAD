@@ -13,7 +13,11 @@ class AlicuotaController extends Controller
      */
     public function index()
     {
-        return response()->json(Alicuota::all(), 200);
+        $alicuotas = Alicuota::with('residente')->get();
+        return response()->json($alicuotas->map(function ($alicuota) {
+        $alicuota->fecha = $alicuota->fecha->format('Y-m-d'); // Formato YYYY-MM-DD
+        return $alicuota;
+    }), 200);
     }
 
     /**
@@ -32,7 +36,7 @@ class AlicuotaController extends Controller
         $request->validate([
             'id_residente' => 'required|integer|exists:residentes,id_residente',
             'fecha' => 'required|date',
-            'mes' => 'required|string|max:255',
+            'mes' => 'required|in:Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre',
             'monto_por_cobrar' => 'required|numeric',
         ]);
 
@@ -65,7 +69,7 @@ class AlicuotaController extends Controller
         $request->validate([
             'id_residente' => 'sometimes|required|integer|exists:residentes,id_residente',
             'fecha' => 'sometimes|required|date',
-            'mes' => 'sometimes|required|string|max:255',
+            'mes' => 'required|in:Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre',
             'monto_por_cobrar' => 'sometimes|required|numeric',
         ]);
 
@@ -82,4 +86,21 @@ class AlicuotaController extends Controller
         Alicuota::destroy($id);
         return response()->json(null, 204);
     }
+
+    // Método para marcar una alícuota como pagada y recalcular la deuda
+    public function marcarPago($id_alicuota)
+    {
+        $alicuota = Alicuota::findOrFail($id_alicuota);
+        $alicuota->pagado = true;
+        $alicuota->save();
+
+        // Calcular la deuda total restante para el residente
+        $totalAdeudado = Alicuota::where('id_residente', $alicuota->id_residente)
+            ->where('pagado', false)
+            ->sum('monto_por_cobrar');
+
+        return response()->json(['message' => 'Pago registrado exitosamente', 'totalAdeudado' => $totalAdeudado], 200);
+    }
+
+
 }

@@ -43,6 +43,13 @@ Route::post('/alicuotas', [AlicuotaController::class, 'store']);
 Route::put('/alicuotas/{id}', [AlicuotaController::class, 'update']);
 Route::delete('/alicuotas/{id}', [AlicuotaController::class, 'destroy']);
 
+// Ruta para obtener el total adeudado por un residente
+Route::get('/alicuotas/total/{id_residente}', [AlicuotaController::class, 'getTotalAdeudado']);
+
+// Ruta para marcar una alícuota como pagada
+Route::put('/alicuotas/{id_alicuota}/marcar-pago', [AlicuotaController::class, 'marcarPago']);
+
+
 // Rutas para EventoController
 Route::get('/eventos', [EventoController::class, 'index']);
 Route::get('/eventos/{id}', [EventoController::class, 'show']);
