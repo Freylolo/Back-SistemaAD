@@ -95,4 +95,19 @@ class UsuarioController extends Controller
         Usuario::destroy($id);
         return response()->json(null, 204);
     }
+
+    public function usuariosSeguridad()
+    {
+    $usuariosSeguridad = Usuario::where('perfil', 'Seguridad')
+                                ->where('rol', 'Seguridad')
+                                ->get();
+
+    // Mensaje de depuración
+    if ($usuariosSeguridad->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron usuarios con perfil y rol de seguridad.'], 404);
+    }
+
+    return response()->json($usuariosSeguridad);
+    }
+
 }

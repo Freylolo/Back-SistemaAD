@@ -39,7 +39,6 @@ class Evento extends Model
 	public $timestamps = false;
 
 	protected $casts = [
-		'id_usuario' => 'int',
 		'cantidad_vehiculos' => 'int',
 		'cantidad_personas' => 'int',
 		'fecha_hora' => 'datetime',
@@ -47,7 +46,6 @@ class Evento extends Model
 	];
 
 	protected $fillable = [
-		'id_usuario',
 		'nombre',
 		'apellidos',
 		'celular',

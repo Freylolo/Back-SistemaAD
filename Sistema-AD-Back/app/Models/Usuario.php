@@ -39,6 +39,7 @@ class Usuario extends Model
 		'correo_electronico',
 		'contrasena',
 		'rol'
+		
 	];
 
 	public function eventos()

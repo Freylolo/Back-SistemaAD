@@ -16,3 +16,17 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Ruta para ver los documentos
+Route::get('uploads/{filename}', function ($filename) {
+    $path = public_path('uploads/' . $filename);
+
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+
+    return response($file, 200)->header("Content-Type", $type);
+});

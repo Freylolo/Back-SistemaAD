@@ -4,7 +4,7 @@ use App\Http\Controllers\AlicuotaController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\PersonalController;
-
+use App\Http\Controllers\ControlAccesoController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -64,13 +64,18 @@ Route::post('/residentes', [ResidenteController::class, 'store']);
 Route::put('/residentes/{id}', [ResidenteController::class, 'update']);
 Route::delete('/residentes/{id}', [ResidenteController::class, 'destroy']);
 
+// Rutas para ControlAccesoController
+Route::get('/control-acceso', [ControlAccesoController::class, 'index']);
+Route::get('/control-acceso/{id}', [ControlAccesoController::class, 'show']);
+Route::post('/control-acceso', [ControlAccesoController::class, 'store']);
+Route::put('/control-acceso/{id}', [ControlAccesoController::class, 'update']);
+Route::delete('/control-acceso/{id}', [ControlAccesoController::class, 'destroy']);
+
 // Ruta para verificar la cedula
 Route::get('/residentes/check-cedula/{cedula}', [ResidenteController::class, 'checkCedula']);
 
 // Ruta para verificar correo_electronico
 Route::get('/residentes/check-correo/{correo_electronico}', [ResidenteController::class, 'checkCorreo']);
 
-// Ruta para obtener el usuario autenticado
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Ruta para obtener el usuario seguridad
+Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad']);
