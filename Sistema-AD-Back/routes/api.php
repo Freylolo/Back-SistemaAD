@@ -5,6 +5,7 @@ use App\Http\Controllers\EventoController;
 use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\ControlAccesoController;
+use App\Http\Controllers\QRCodeController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -79,3 +80,6 @@ Route::get('/residentes/check-correo/{correo_electronico}', [ResidenteController
 
 // Ruta para obtener el usuario seguridad
 Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad']);
+
+//rutas emails
+Route::post('/enviar-correo', [QRCodeController::class, 'enviarCorreo']);

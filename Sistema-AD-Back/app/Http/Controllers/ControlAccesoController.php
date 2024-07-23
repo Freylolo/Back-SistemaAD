@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\ControlAcceso;
 use App\Models\Usuario;
 
-
 class ControlAccesoController extends Controller
 {
     /**
@@ -14,8 +13,8 @@ class ControlAccesoController extends Controller
      */
     public function index()
     {
-        $controlAccesos = \App\Models\ControlAcceso::all();
-         return response()->json($controlAccesos);
+        $controlAccesos = ControlAcceso::all();
+        return response()->json($controlAccesos);
     }
 
     /**
@@ -23,7 +22,7 @@ class ControlAccesoController extends Controller
      */
     public function create()
     {
-        //
+        // Este método no se usa en API, puedes dejarlo vacío o eliminarlo
     }
 
     /**
@@ -38,7 +37,7 @@ class ControlAccesoController extends Controller
             'nombre' => 'required|string|max:255',
             'apellidos' => 'required|string|max:255',
             'cedula' => 'required|string|max:10',
-            'sexo' => 'required|in:M,F',
+            'sexo' => 'required|in:M,F,Indefinido',
             'placas' => 'required|string|max:10',
             'direccion' => 'required|string|max:255',
             'ingresante' => 'required|in:Residente,Visitante,Delivery',
@@ -66,13 +65,13 @@ class ControlAccesoController extends Controller
      */
     public function show(string $id)
     {
-        $controlAcceso = \App\Models\ControlAcceso::find($id);
+        $controlAcceso = ControlAcceso::find($id);
 
-         if (!$controlAcceso) {
-        return response()->json(['message' => 'Registro no encontrado'], 404);
-          }
-
-         return response()->json($controlAcceso);
+        if (!$controlAcceso) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
+    
+        return response()->json($controlAcceso);
     }
 
     /**
@@ -80,7 +79,7 @@ class ControlAccesoController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        // Este método no se usa en API, puedes dejarlo vacío o eliminarlo
     }
 
     /**
@@ -88,48 +87,50 @@ class ControlAccesoController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $controlAcceso = \App\Models\ControlAcceso::find($id);
+        $controlAcceso = ControlAcceso::find($id);
 
-    if (!$controlAcceso) {
-        return response()->json(['message' => 'Registro no encontrado'], 404);
-    }
+        if (!$controlAcceso) {
+            return response()->json(['message' => 'Registro no encontrado'], 404);
+        }
 
-    $validated = $request->validate([
-        'id_usuario' => 'required|exists:usuarios,id_usuario',
-        'nombre' => 'required|string|max:50',
-        'apellidos' => 'required|string|max:50',
-        'cedula' => 'required|string|max:10',
-        'sexo' => 'required|in:M,F',
-        'placas' => 'required|string|max:10',
-        'direccion' => 'required|string|max:255',
-        'ingresante' => 'required|in:Residente,Visitante,Delivery',
-        'fecha_ingreso' => 'required|date',
-        'fecha_salida' => 'nullable|date',
-        'observaciones' => 'nullable|string',
-        'username' => 'required|string|max:50',
+        $validated = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
+            'nombre' => 'required|string|max:50',
+            'apellidos' => 'required|string|max:50',
+            'cedula' => 'required|string|max:10',
+            'sexo' => 'required|in:M,F,Indefinido',
+            'placas' => 'required|string|max:10',
+            'direccion' => 'required|string|max:255',
+            'ingresante' => 'required|in:Residente,Visitante,Delivery',
+            'fecha_ingreso' => 'required|date',
+            'fecha_salida' => 'nullable|date',
+            'observaciones' => 'nullable|string',
+            'username' => 'required|string|max:50',
+        ]);
 
-    ]);
+        $controlAcceso->update($validated);
 
-    $controlAcceso->update($validated);
-
-    return response()->json($controlAcceso);
+        return response()->json($controlAcceso);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $id_acceso)
     {
-        $controlAcceso = \App\Models\ControlAcceso::find($id);
+        try {
+            $controlAcceso = ControlAcceso::find($id_acceso);
 
-    if (!$controlAcceso) {
-        return response()->json(['message' => 'Registro no encontrado'], 404);
+            if (!$controlAcceso) {
+                return response()->json(['message' => 'Registro no encontrado'], 404);
+            }
+
+            $controlAcceso->delete();
+
+            return response()->json(['message' => 'Registro eliminado con éxito']);
+        } catch (\Exception $e) {
+            \Log::error('Error al eliminar el registro de control de acceso: ' . $e->getMessage());
+            return response()->json(['message' => 'Error al eliminar el registro'], 500);
+        }
     }
-
-    $controlAcceso->delete();
-
-    return response()->json(['message' => 'Registro eliminado con éxito']);
-    }
-
-
 }
