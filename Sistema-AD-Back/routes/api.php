@@ -6,6 +6,7 @@ use App\Http\Controllers\ResidenteController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\ControlAccesoController;
 use App\Http\Controllers\QRCodeController;
+use App\Http\Controllers\AuthController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -83,3 +84,6 @@ Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad'
 
 //rutas emails
 Route::post('/enviar-correo', [QRCodeController::class, 'enviarCorreo']);
+
+Route::post('/login', [AuthController::class, 'login']);
+

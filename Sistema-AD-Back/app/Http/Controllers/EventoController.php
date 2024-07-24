@@ -13,14 +13,38 @@ class EventoController extends Controller
      */
     public function index()
     {
-        return response()->json(Evento::all(), 200);
+        
+        $eventos = Evento::orderBy('fecha_hora', 'desc')->get();
+         return response()->json($eventos, 200);
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
+{
+    // Log del tipo de evento recibido para depuración
+    \Log::info('Tipo de evento recibido:', ['tipo_evento' => $request->tipo_evento]);
+
+    // Si el tipo de evento es 'Hogar', omitir validaciones adicionales
+    if (strtolower($request->tipo_evento) === 'hogar') {
+        $data = $request->except('listado_evento');
+
+        if ($request->hasFile('listado_evento')) {
+            $file = $request->file('listado_evento');
+            $filename = time() . '-' . $file->getClientOriginalName();
+            $file->move(public_path('uploads'), $filename);
+            $data['listado_evento'] = $filename;
+        } else {
+            $data['listado_evento'] = null;
+        }
+
+        $evento = Evento::create($data);
+
+        return response()->json($evento, 201);
+    }
+
+    // Realizar validaciones para otros tipos de evento
     $request->validate([
         'nombre' => 'required|string|max:255',
         'apellidos' => 'required|string|max:255',
@@ -32,11 +56,33 @@ class EventoController extends Controller
         'cantidad_personas' => 'required|integer',
         'tipo_evento' => 'required|string|max:50',
         'fecha_hora' => 'required|date',
-        'duracion_evento' => 'required|numeric',
-        'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048', 
+        'duracion_evento' => 'required|numeric|lte:5',
+        'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
         'observaciones' => 'nullable|string',
     ]);
 
+    // Obtener los eventos del mismo día
+    $date = \Carbon\Carbon::parse($request->fecha_hora)->format('Y-m-d');
+    $eventsToday = Evento::whereDate('fecha_hora', $date)->get();
+
+    // Verificar el número de eventos para el mismo día
+    if ($eventsToday->count() >= 2) {
+        return response()->json(['error' => 'Ya se han registrado dos eventos para este día.'], 422);
+    }
+
+    // Verificar la superposición de horarios
+    $startTime = \Carbon\Carbon::parse($request->fecha_hora);
+    $endTime = $startTime->copy()->addHours($request->duracion_evento);
+
+    foreach ($eventsToday as $event) {
+        $eventStartTime = \Carbon\Carbon::parse($event->fecha_hora);
+        $eventEndTime = $eventStartTime->copy()->addHours($event->duracion_evento);
+        if ($startTime->lt($eventEndTime) && $endTime->gt($eventStartTime)) {
+            return response()->json(['error' => 'El horario seleccionado se superpone con otro evento existente.'], 422);
+        }
+    }
+
+    // Continúa con la creación del evento
     $data = $request->except('listado_evento');
 
     if ($request->hasFile('listado_evento')) {
@@ -44,16 +90,17 @@ class EventoController extends Controller
         $filename = time() . '-' . $file->getClientOriginalName();
         $file->move(public_path('uploads'), $filename);
         $data['listado_evento'] = $filename;
+    } else {
+        $data['listado_evento'] = null;
     }
 
     $evento = Evento::create($data);
-    // Verifica que el archivo ha sido guardado correctamente
-    if ($data['listado_evento'] && !file_exists(public_path('uploads/' . $data['listado_evento']))) {
-        return response()->json(['error' => 'Archivo no encontrado en el servidor.'], 500);
-    }
-    
+
     return response()->json($evento, 201);
-   }
+}
+
+
+
 
 
     /**
