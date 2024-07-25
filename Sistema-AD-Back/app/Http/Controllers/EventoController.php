@@ -59,6 +59,7 @@ class EventoController extends Controller
         'duracion_evento' => 'required|numeric|lte:5',
         'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
         'observaciones' => 'nullable|string',
+        'estado' => 'required|string|in:En proceso de aceptacion,Aceptado,Denegado'
     ]);
 
     // Obtener los eventos del mismo día
@@ -131,6 +132,7 @@ class EventoController extends Controller
             'duracion_evento' => 'sometimes|required|numeric',
             'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
             'observaciones' => 'nullable|string',
+            'estado' => 'required|string|in:En proceso de aceptacion,Aceptado,Denegado'
         ]);
 
         $evento = Evento::findOrFail($id);

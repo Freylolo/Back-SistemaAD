@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property float $duracion_evento
  * @property string|null $listado_evento
  * @property string|null $observaciones
+ * @property string $estado
  * 
  * @property Usuario $usuario
  *
@@ -58,7 +59,8 @@ class Evento extends Model
 		'fecha_hora',
 		'duracion_evento',
 		'listado_evento',
-		'observaciones'
+		'observaciones',
+		'estado'
 	];
 
 	public function usuario()

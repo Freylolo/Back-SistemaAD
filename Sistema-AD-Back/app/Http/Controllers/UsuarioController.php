@@ -110,4 +110,11 @@ class UsuarioController extends Controller
     return response()->json($usuariosSeguridad);
     }
 
+    public function checkCorreoUsuarios($correo_electronico)
+    {
+        $exists = Usuario::where('correo_electronico', $correo_electronico)->exists();
+        return response()->json(['exists' => $exists]);
+    }
+
+
 }

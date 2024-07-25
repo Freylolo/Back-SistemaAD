@@ -35,9 +35,24 @@ class PersonalController extends Controller
             'sexo' => 'required|string|in:Masculino,Femenino',
             'perfil' => 'required|string|in:Seguridad,Administracion',
             'observaciones' => 'nullable|string',
+            'celular' => 'required|string|max:20',
         ]);
 
+        // Formatear el número de celular
+        $celular = $request->input('celular');
+            if (preg_match('/^0\d{9}$/', $celular)) {
+        $celular = '+593' . substr($celular, 1);
+            } elseif (preg_match('/^\d{9}$/', $celular)) {
+         $celular = '+593' . $celular;
+            }
+
+      // Verificar si el número de celular ya existe
+        if (Personal::where('celular', $celular)->exists()) {
+        return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
+        }
+
         $personal = Personal::create($request->all());
+        $personal->celular = $celular;
         return response()->json($personal, 201);
     }
 
@@ -70,8 +85,9 @@ class PersonalController extends Controller
             'sexo' => 'sometimes|required|string|in:Masculino,Femenino',
             'perfil' => 'sometimes|required|string|in:Seguridad,Administracion',
             'observaciones' => 'nullable|string',
+            'celular' => 'required|string|max:20',
         ]);
-
+ 
         $personal = Personal::findOrFail($id);
         $personal->update($request->all());
         return response()->json($personal, 200);
@@ -86,4 +102,22 @@ class PersonalController extends Controller
         $personal->delete();
         return response()->json(null, 204);
     }
+
+    public function checkCedulaPersonal($cedula)
+    {
+    $exists = Personal::where('cedula', $cedula)->exists();
+    return response()->json(['exists' => $exists]);
+    }
+
+    public function checkCorreoPersonal($correo_electronico)
+    {
+        $exists = Personal::where('correo_electronico', $correo_electronico)->exists();
+        return response()->json(['exists' => $exists]);
+    }
+
+    public function checkCelular($celular)
+     {
+    $exists = Personal::where('celular', $celular)->exists();
+    return response()->json(['exists' => $exists]);
+     }
 }

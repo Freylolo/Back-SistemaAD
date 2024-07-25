@@ -125,4 +125,10 @@ class ResidenteController extends Controller
         $exists = Residente::where('correo_electronico', $correo_electronico)->exists();
         return response()->json(['exists' => $exists]);
     }
+
+    public function checkCelularR($celular)
+     {
+    $exists = Residente::where('celular', $celular)->exists();
+    return response()->json(['exists' => $exists]);
+     }
 }

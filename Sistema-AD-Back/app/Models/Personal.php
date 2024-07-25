@@ -33,6 +33,8 @@ class Personal extends Model
 		'cedula',
 		'sexo',
 		'perfil',
-		'observaciones'
+		'observaciones',
+		'celular',
+
 	];
 }

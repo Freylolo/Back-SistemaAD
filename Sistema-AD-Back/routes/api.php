@@ -73,11 +73,24 @@ Route::post('/control-acceso', [ControlAccesoController::class, 'store']);
 Route::put('/control-acceso/{id}', [ControlAccesoController::class, 'update']);
 Route::delete('/control-acceso/{id}', [ControlAccesoController::class, 'destroy']);
 
-// Ruta para verificar la cedula
+// Ruta para verificar la cedula residentes
 Route::get('/residentes/check-cedula/{cedula}', [ResidenteController::class, 'checkCedula']);
 
-// Ruta para verificar correo_electronico
+// Ruta para verificar correo_electronico residentes
 Route::get('/residentes/check-correo/{correo_electronico}', [ResidenteController::class, 'checkCorreo']);
+
+// Ruta para verificar la cedula personal
+Route::get('/personal/check-cedula-personal/{cedula}', [PersonalController::class, 'checkCedulaPersonal']);
+
+// Ruta para verificar correo_electronico personal
+Route::get('/personal/check-correo-personal/{correo_electronico}', [PersonalController::class, 'checkCorreoPersonal']);
+
+Route::get('/personal/check-celular/{celular}', [PersonalController::class, 'checkCelular']);
+Route::get('/residentes/check-celularR/{celular}', [ResidenteController::class, 'checkCelularR']);
+
+
+// Ruta para verificar correo en usuarios:
+Route::get('/usuarios/check-correo-usuarios/{correo_electronico}', [UsuarioController::class, 'checkCorreoUsuarios']);
 
 // Ruta para obtener el usuario seguridad
 Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad']);
