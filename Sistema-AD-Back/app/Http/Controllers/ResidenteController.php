@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Residente;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\Usuario;
 
 
 use Illuminate\Http\Request;
@@ -31,7 +31,8 @@ class ResidenteController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'cedula' => 'required|string|max:20|unique:residentes',
@@ -52,9 +53,18 @@ class ResidenteController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        $residente = Residente::create($request->all());
-        return response()->json($residente, 201);
-        
+        $user = Usuario::find($validatedData['id_usuario']);
+    
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+
+        try {
+            $residente = Residente::create($validatedData);
+            return response()->json($residente, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al crear el residente', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -79,7 +89,8 @@ class ResidenteController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $request->validate([
+        $validatedData = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
             'nombre' => 'sometimes|required|string|max:255',
             'apellido' => 'sometimes|required|string|max:255',
             'cedula' => 'sometimes|required|string|max:20|unique:residentes,cedula,' . $id . ',id_residente',
@@ -87,7 +98,7 @@ class ResidenteController extends Controller
             'perfil' => 'sometimes|required|string|max:255',
             'direccion' => 'sometimes|required|string|max:255',
             'solar' => 'sometimes|required|string|max:255',
-            'sometimes|required|numeric|min:0',
+            'm2' => 'sometimes|required|numeric|min:0',
             'celular' => 'sometimes|required|string|max:20',
             'correo_electronico' => 'sometimes|required|string|email|max:255|unique:residentes,correo_electronico,' . $id . ',id_residente',
             'cantidad_vehiculos' => 'sometimes|required|integer',
@@ -101,8 +112,13 @@ class ResidenteController extends Controller
         ]);
 
         $residente = Residente::findOrFail($id);
-        $residente->update($request->all());
-        return response()->json($residente, 200);
+
+        try {
+            $residente->update($validatedData);
+            return response()->json($residente, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el residente', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -127,8 +143,24 @@ class ResidenteController extends Controller
     }
 
     public function checkCelularR($celular)
-     {
-    $exists = Residente::where('celular', $celular)->exists();
-    return response()->json(['exists' => $exists]);
-     }
+    {
+        $residente = Residente::where('celular', $celular)->first();
+    
+        if ($residente) {
+            return response()->json(['exists' => true]);
+        } else {
+            return response()->json(['exists' => false]);
+        }
+    }
+
+    public function getResidenteById($id_residente) {
+        $residente = Residente::where('id_residente', $id_residente)
+                               ->with('usuario') 
+                               ->first();
+        if (!$residente) {
+            return response()->json(['error' => 'Residente no encontrado'], 404);
+        }
+        return response()->json($residente);
+    }
+
 }

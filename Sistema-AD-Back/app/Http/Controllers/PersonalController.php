@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Personal;
+use App\Models\Usuario;
+
 
 class PersonalController extends Controller
 {
@@ -28,7 +30,8 @@ class PersonalController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
             'nombre' => 'required|string|max:255',
             'apellido' => 'required|string|max:255',
             'cedula' => 'required|string|max:20|unique:personal,cedula',
@@ -36,24 +39,34 @@ class PersonalController extends Controller
             'perfil' => 'required|string|in:Seguridad,Administracion',
             'observaciones' => 'nullable|string',
             'celular' => 'required|string|max:20',
+            'correo_electronico' => 'sometimes|required|string|email|max:255|unique:personal,correo_electronico',
         ]);
 
-        // Formatear el número de celular
-        $celular = $request->input('celular');
-            if (preg_match('/^0\d{9}$/', $celular)) {
-        $celular = '+593' . substr($celular, 1);
-            } elseif (preg_match('/^\d{9}$/', $celular)) {
-         $celular = '+593' . $celular;
-            }
-
-      // Verificar si el número de celular ya existe
-        if (Personal::where('celular', $celular)->exists()) {
-        return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
+        $user = Usuario::find($validatedData['id_usuario']);
+    
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
 
-        $personal = Personal::create($request->all());
-        $personal->celular = $celular;
-        return response()->json($personal, 201);
+        // Formatear el número de celular
+        $celular = $validatedData['celular'];
+        if (preg_match('/^0\d{9}$/', $celular)) {
+            $celular = '+593' . substr($celular, 1);
+        } elseif (preg_match('/^\d{9}$/', $celular)) {
+            $celular = '+593' . $celular;
+        }
+
+        // Verificar si el número de celular ya existe
+        if (Personal::where('celular', $celular)->exists()) {
+            return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
+        }
+
+        try {
+            $personal = Personal::create(array_merge($validatedData, ['celular' => $celular]));
+            return response()->json($personal, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al crear el personal', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -61,8 +74,12 @@ class PersonalController extends Controller
      */
     public function show($id)
     {
-        $personal = Personal::findOrFail($id);
-        return response()->json($personal, 200);
+        try {
+            $personal = Personal::findOrFail($id);
+            return response()->json($personal, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Personal no encontrado', 'details' => $e->getMessage()], 404);
+        }
     }
 
     /**
@@ -78,19 +95,42 @@ class PersonalController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $request->validate([
+        $validatedData = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
             'nombre' => 'sometimes|required|string|max:255',
             'apellido' => 'sometimes|required|string|max:255',
             'cedula' => 'sometimes|required|string|max:20|unique:personal,cedula,' . $id . ',id_personal',
             'sexo' => 'sometimes|required|string|in:Masculino,Femenino',
             'perfil' => 'sometimes|required|string|in:Seguridad,Administracion',
             'observaciones' => 'nullable|string',
-            'celular' => 'required|string|max:20',
+            'celular' => 'sometimes|required|string|max:20',
+            'correo_electronico' => 'sometimes|required|string|email|max:255|unique:personal,correo_electronico,' . $id . ',id_personal',
         ]);
- 
-        $personal = Personal::findOrFail($id);
-        $personal->update($request->all());
-        return response()->json($personal, 200);
+
+        try {
+            $personal = Personal::findOrFail($id);
+
+            // Formatear el número de celular
+            if (isset($validatedData['celular'])) {
+                $celular = $validatedData['celular'];
+                if (preg_match('/^0\d{9}$/', $celular)) {
+                    $celular = '+593' . substr($celular, 1);
+                } elseif (preg_match('/^\d{9}$/', $celular)) {
+                    $celular = '+593' . $celular;
+                }
+                $validatedData['celular'] = $celular;
+
+                // Verificar si el número de celular ya existe
+                if (Personal::where('celular', $celular)->where('id_personal', '!=', $id)->exists()) {
+                    return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
+                }
+            }
+
+            $personal->update($validatedData);
+            return response()->json($personal, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar el personal', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -98,15 +138,19 @@ class PersonalController extends Controller
      */
     public function destroy($id)
     {
-        $personal = Personal::findOrFail($id);
-        $personal->delete();
-        return response()->json(null, 204);
+        try {
+            $personal = Personal::findOrFail($id);
+            $personal->delete();
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar el personal', 'details' => $e->getMessage()], 500);
+        }
     }
 
     public function checkCedulaPersonal($cedula)
     {
-    $exists = Personal::where('cedula', $cedula)->exists();
-    return response()->json(['exists' => $exists]);
+        $exists = Personal::where('cedula', $cedula)->exists();
+        return response()->json(['exists' => $exists]);
     }
 
     public function checkCorreoPersonal($correo_electronico)
@@ -116,8 +160,8 @@ class PersonalController extends Controller
     }
 
     public function checkCelular($celular)
-     {
-    $exists = Personal::where('celular', $celular)->exists();
-    return response()->json(['exists' => $exists]);
-     }
+    {
+        $exists = Personal::where('celular', $celular)->exists();
+        return response()->json(['exists' => $exists]);
+    }
 }

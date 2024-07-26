@@ -116,5 +116,31 @@ class UsuarioController extends Controller
         return response()->json(['exists' => $exists]);
     }
 
+    public function getUserIdByEmail(Request $request)
+    {
+    $request->validate([
+        'correo_electronico' => 'required|email',
+    ]);
+
+    $usuario = Usuario::where('correo_electronico', $request->correo_electronico)->first();
+
+    if ($usuario) {
+        return response()->json(['id_usuario' => $usuario->id_usuario]);
+    } else {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
+    }
+    }
+
+    public function getUserIdByUsername($username)
+{
+    $usuario = Usuario::where('username', $username)->first();
+
+    if (!$usuario) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
+    }
+
+    return response()->json(['id_usuario' => $usuario->id_usuario], 200);
+}
+
 
 }

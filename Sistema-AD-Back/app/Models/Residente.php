@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Class Residente
  * 
+ * @property int $id_usuario
  * @property int $id_residente
  * @property string $nombre
  * @property string $apellido
@@ -47,6 +48,7 @@ class Residente extends Model
 	];
 
 	protected $fillable = [
+        'id_usuario',
 		'nombre',
 		'apellido',
 		'cedula',
@@ -70,5 +72,10 @@ class Residente extends Model
 	public function alicuotas()
 	{
 		return $this->hasMany(Alicuota::class, 'id_residente');
+	}
+
+	public function usuario()
+	{
+		return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
 	}
 }

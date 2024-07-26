@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $sexo
  * @property string $placas
  * @property string $direccion
- * @property string $ingresante
+ * @property string $ingresante 
  * @property string $fecha_ingreso
  * @property string|null $fecha_salida
  * @property string|null $observaciones

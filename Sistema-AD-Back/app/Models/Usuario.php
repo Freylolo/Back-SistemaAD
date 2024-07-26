@@ -46,4 +46,15 @@ class Usuario extends Model
 	{
 		return $this->hasMany(Evento::class, 'id_usuario');
 	}
+
+	public function getUserIdByUsername($username)
+{
+    $usuario = Usuario::where('username', $username)->first();
+
+    if (!$usuario) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
+    }
+
+    return response()->json(['id_usuario' => $usuario->id_usuario], 200);
+}
 }

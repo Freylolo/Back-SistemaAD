@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Class Personal
  * 
+ * @property int $id_usuario
  * @property int $id_personal
  * @property string $nombre
  * @property string $apellido
@@ -28,6 +29,7 @@ class Personal extends Model
 	public $timestamps = false;
 
 	protected $fillable = [
+        'id_usuario',
 		'nombre',
 		'apellido',
 		'cedula',
@@ -37,4 +39,9 @@ class Personal extends Model
 		'celular',
 
 	];
+
+	public function usuario()
+	{
+		return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
+	}
 }

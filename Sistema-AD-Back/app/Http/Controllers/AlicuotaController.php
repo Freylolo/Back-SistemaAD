@@ -102,5 +102,13 @@ class AlicuotaController extends Controller
         return response()->json(['message' => 'Pago registrado exitosamente', 'totalAdeudado' => $totalAdeudado], 200);
     }
 
+    public function getAlicuotasByUser($id_usuario)
+    {
+    $alicuotas = Alicuota::whereHas('residente', function($query) use ($id_usuario) {
+        $query->where('id_usuario', $id_usuario);
+    })->with('residente')->get();
+
+    return response()->json($alicuotas);
+    }
 
 }

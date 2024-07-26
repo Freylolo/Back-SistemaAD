@@ -10,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Evento
+ * Class Evento 
  * 
  * @property int $id_evento
  * @property int $id_usuario
@@ -45,8 +45,9 @@ class Evento extends Model
 		'fecha_hora' => 'datetime',
 		'duracion_evento' => 'float'
 	];
-
+ 
 	protected $fillable = [
+        'id_usuario',
 		'nombre',
 		'apellidos',
 		'celular',
@@ -65,6 +66,6 @@ class Evento extends Model
 
 	public function usuario()
 	{
-		return $this->belongsTo(Usuario::class, 'id_usuario');
+		return $this->belongsTo(Usuario::class, 'id_usuario', 'id_usuario');
 	}
 }

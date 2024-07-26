@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Evento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Usuario;
+
 
 class EventoController extends Controller
 {
@@ -46,6 +48,7 @@ class EventoController extends Controller
 
     // Realizar validaciones para otros tipos de evento
     $request->validate([
+        'id_usuario' => 'required|exists:usuarios,id_usuario',
         'nombre' => 'required|string|max:255',
         'apellidos' => 'required|string|max:255',
         'celular' => 'required|string|max:20',
@@ -59,8 +62,13 @@ class EventoController extends Controller
         'duracion_evento' => 'required|numeric|lte:5',
         'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
         'observaciones' => 'nullable|string',
-        'estado' => 'required|string|in:En proceso de aceptacion,Aceptado,Denegado'
-    ]);
+        'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
+    ]); 
+
+        $user = Usuario::find($data['id_usuario']);
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
 
     // Obtener los eventos del mismo día
     $date = \Carbon\Carbon::parse($request->fecha_hora)->format('Y-m-d');
@@ -100,10 +108,6 @@ class EventoController extends Controller
     return response()->json($evento, 201);
 }
 
-
-
-
-
     /**
      * Display the specified resource.
      */
@@ -119,6 +123,7 @@ class EventoController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
+            'id_usuario' => 'required|integer',
             'nombre' => 'sometimes|required|string|max:255',
             'apellidos' => 'sometimes|required|string|max:255',
             'celular' => 'sometimes|required|string|max:20',
@@ -132,7 +137,7 @@ class EventoController extends Controller
             'duracion_evento' => 'sometimes|required|numeric',
             'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
             'observaciones' => 'nullable|string',
-            'estado' => 'required|string|in:En proceso de aceptacion,Aceptado,Denegado'
+            'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
         ]);
 
         $evento = Evento::findOrFail($id);
@@ -170,4 +175,34 @@ class EventoController extends Controller
         $evento->delete();
         return response()->json(null, 204);
     }
+
+    public function getFileUrl($filename)
+    {
+    return asset('uploads/' . $filename);
+    }
+
+    public function downloadFile($filename)
+    {
+    $filename = urldecode($filename); // Decodifica el nombre del archivo
+    $path = public_path('uploads/' . $filename);
+
+    if (!file_exists($path)) {
+        return response()->json(['error' => 'File not found.'], 404);
+    }
+
+    return response()->download($path);
+    }
+
+    public function updateEstado(Request $request, $id){
+    $request->validate([
+        'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
+    ]);
+
+    $evento = Evento::findOrFail($id);
+    $evento->estado = $request->estado;
+    $evento->save();
+
+    return response()->json($evento, 200);
+    }
+
 }

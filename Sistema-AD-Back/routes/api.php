@@ -51,7 +51,6 @@ Route::get('/alicuotas/total/{id_residente}', [AlicuotaController::class, 'getTo
 // Ruta para marcar una alícuota como pagada
 Route::put('/alicuotas/{id_alicuota}/marcar-pago', [AlicuotaController::class, 'marcarPago']);
 
-
 // Rutas para EventoController
 Route::get('/eventos', [EventoController::class, 'index']);
 Route::get('/eventos/{id}', [EventoController::class, 'show']);
@@ -88,9 +87,9 @@ Route::get('/personal/check-correo-personal/{correo_electronico}', [PersonalCont
 Route::get('/personal/check-celular/{celular}', [PersonalController::class, 'checkCelular']);
 Route::get('/residentes/check-celularR/{celular}', [ResidenteController::class, 'checkCelularR']);
 
-
 // Ruta para verificar correo en usuarios:
 Route::get('/usuarios/check-correo-usuarios/{correo_electronico}', [UsuarioController::class, 'checkCorreoUsuarios']);
+Route::post('/usuarios/getUserIdByEmail', [UsuarioController::class, 'getUserIdByEmail']);
 
 // Ruta para obtener el usuario seguridad
 Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad']);
@@ -98,5 +97,12 @@ Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad'
 //rutas emails
 Route::post('/enviar-correo', [QRCodeController::class, 'enviarCorreo']);
 
+//ruta para descargar archivo evento
+Route::get('/uploads/{filename}', [EventoController::class, 'downloadFile'])->name('downloadFile');
+
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::patch('/eventos/{id}/estado', [EventoController::class, 'updateEstado']);
+
+Route::get('/usuarios/username/{username}', [UsuarioController::class, 'getUserIdByUsername']);
 
