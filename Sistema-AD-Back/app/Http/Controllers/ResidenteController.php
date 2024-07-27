@@ -70,10 +70,15 @@ class ResidenteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        $residente = Residente::findOrFail($id);
-        return response()->json($residente, 200);
+        $residente = Residente::find($id);
+
+        if ($residente) {
+            return response()->json($residente);
+        } else {
+            return response()->json(['message' => 'Residente no encontrado'], 404);
+        }
     }
 
     /**

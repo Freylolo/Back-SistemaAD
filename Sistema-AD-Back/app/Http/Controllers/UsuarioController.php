@@ -132,7 +132,7 @@ class UsuarioController extends Controller
     }
 
     public function getUserIdByUsername($username)
-{
+    {
     $usuario = Usuario::where('username', $username)->first();
 
     if (!$usuario) {
@@ -140,7 +140,62 @@ class UsuarioController extends Controller
     }
 
     return response()->json(['id_usuario' => $usuario->id_usuario], 200);
-}
+    }
+
+    public function requestPasswordReset(Request $request)
+    {
+        $request->validate([
+            'correo' => 'required|email'
+        ]);
+    
+        $user = Usuario::where('correo_electronico', $request->correo)->first();
+    
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+    
+        $token = Str::random(60);
+        $user->update(['password_reset_token' => $token]);
+    
+        $resetLink = url('/reset-password?token=' . $token . '&email=' . urlencode($request->correo));
+    
+        // Enviar correo
+        Mail::to($request->correo)->send(new PasswordResetMail($resetLink));
+    
+        return response()->json(['message' => 'Se ha enviado un enlace para restablecer la contraseña.']);
+    }
+    
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'new_password' => 'required|string|min:8'
+        ]);
+
+        $user = Usuario::where('correo_electronico', $request->email)
+                       ->where('password_reset_token', $request->token)
+                       ->first();
+
+        if (!$user) {
+            return response()->json(['error' => 'Token o correo electrónico inválidos'], 400);
+        }
+
+        $user->update([
+            'contrasena' => Hash::make($request->new_password),
+            'password_reset_token' => null
+        ]);
+
+        return response()->json(['message' => 'Contraseña restablecida exitosamente']);
+    }
+
+    public function showResetPasswordForm(Request $request)
+    {
+    $token = $request->query('token');
+    return view('auth.reset_password', ['token' => $token]);
+    }
+
 
 
 }

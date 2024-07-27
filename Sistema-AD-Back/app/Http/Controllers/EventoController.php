@@ -6,6 +6,7 @@ use App\Models\Evento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Usuario;
+use App\Models\Residente;
 
 
 class EventoController extends Controller
@@ -24,31 +25,14 @@ class EventoController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-{
+    {
     // Log del tipo de evento recibido para depuración
     \Log::info('Tipo de evento recibido:', ['tipo_evento' => $request->tipo_evento]);
 
-    // Si el tipo de evento es 'Hogar', omitir validaciones adicionales
-    if (strtolower($request->tipo_evento) === 'hogar') {
-        $data = $request->except('listado_evento');
-
-        if ($request->hasFile('listado_evento')) {
-            $file = $request->file('listado_evento');
-            $filename = time() . '-' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $filename);
-            $data['listado_evento'] = $filename;
-        } else {
-            $data['listado_evento'] = null;
-        }
-
-        $evento = Evento::create($data);
-
-        return response()->json($evento, 201);
-    }
-
-    // Realizar validaciones para otros tipos de evento
+    // Validación de datos
     $request->validate([
         'id_usuario' => 'required|exists:usuarios,id_usuario',
+        'id_residente' => 'required|exists:residentes,id_residente',
         'nombre' => 'required|string|max:255',
         'apellidos' => 'required|string|max:255',
         'celular' => 'required|string|max:20',
@@ -63,35 +47,38 @@ class EventoController extends Controller
         'listado_evento' => 'nullable|file|mimes:pdf,docx,xlsx|max:2048',
         'observaciones' => 'nullable|string',
         'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
-    ]); 
+    ]);
 
-        $user = Usuario::find($data['id_usuario']);
-        if (!$user) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-
-    // Obtener los eventos del mismo día
-    $date = \Carbon\Carbon::parse($request->fecha_hora)->format('Y-m-d');
-    $eventsToday = Evento::whereDate('fecha_hora', $date)->get();
-
-    // Verificar el número de eventos para el mismo día
-    if ($eventsToday->count() >= 2) {
-        return response()->json(['error' => 'Ya se han registrado dos eventos para este día.'], 422);
+    // Comprobar el usuario
+    $user = Usuario::find($request->id_usuario);
+    if (!$user) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
     }
 
-    // Verificar la superposición de horarios
-    $startTime = \Carbon\Carbon::parse($request->fecha_hora);
-    $endTime = $startTime->copy()->addHours($request->duracion_evento);
+    // Si el tipo de evento no es "Hogar", verificar el número de eventos para el mismo día
+    if ($request->tipo_evento !== 'Hogar') {
+        $date = \Carbon\Carbon::parse($request->fecha_hora)->format('Y-m-d');
+        $eventsToday = Evento::whereDate('fecha_hora', $date)->get();
 
-    foreach ($eventsToday as $event) {
-        $eventStartTime = \Carbon\Carbon::parse($event->fecha_hora);
-        $eventEndTime = $eventStartTime->copy()->addHours($event->duracion_evento);
-        if ($startTime->lt($eventEndTime) && $endTime->gt($eventStartTime)) {
-            return response()->json(['error' => 'El horario seleccionado se superpone con otro evento existente.'], 422);
+        // Verificar el número de eventos para el mismo día
+        if ($eventsToday->count() >= 2) {
+            return response()->json(['error' => 'Ya se han registrado dos eventos para este día.'], 422);
+        }
+
+        // Verificar la superposición de horarios
+        $startTime = \Carbon\Carbon::parse($request->fecha_hora);
+        $endTime = $startTime->copy()->addHours($request->duracion_evento);
+
+        foreach ($eventsToday as $event) {
+            $eventStartTime = \Carbon\Carbon::parse($event->fecha_hora);
+            $eventEndTime = $eventStartTime->copy()->addHours($event->duracion_evento);
+            if ($startTime->lt($eventEndTime) && $endTime->gt($eventStartTime)) {
+                return response()->json(['error' => 'El horario seleccionado se superpone con otro evento existente.'], 422);
+            }
         }
     }
 
-    // Continúa con la creación del evento
+    // Preparar datos para crear el evento
     $data = $request->except('listado_evento');
 
     if ($request->hasFile('listado_evento')) {
@@ -106,7 +93,8 @@ class EventoController extends Controller
     $evento = Evento::create($data);
 
     return response()->json($evento, 201);
-}
+    }
+
 
     /**
      * Display the specified resource.
@@ -124,6 +112,7 @@ class EventoController extends Controller
     {
         $request->validate([
             'id_usuario' => 'required|integer',
+            'id_residente' => 'required|integer',
             'nombre' => 'sometimes|required|string|max:255',
             'apellidos' => 'sometimes|required|string|max:255',
             'celular' => 'sometimes|required|string|max:20',
@@ -178,31 +167,43 @@ class EventoController extends Controller
 
     public function getFileUrl($filename)
     {
-    return asset('uploads/' . $filename);
+        return asset('uploads/' . $filename);
     }
 
     public function downloadFile($filename)
     {
-    $filename = urldecode($filename); // Decodifica el nombre del archivo
-    $path = public_path('uploads/' . $filename);
+        $filename = urldecode($filename); // Decodifica el nombre del archivo
+        $path = public_path('uploads/' . $filename);
 
-    if (!file_exists($path)) {
-        return response()->json(['error' => 'File not found.'], 404);
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'Archivo no encontrado.'], 404);
+        }
+
+        return response()->download($path);
     }
 
-    return response()->download($path);
+    public function updateEstado(Request $request, $id)
+    {
+        $request->validate([
+            'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
+        ]);
+
+        $evento = Evento::findOrFail($id);
+        $evento->estado = $request->estado;
+        $evento->save();
+
+        return response()->json($evento, 200);
     }
 
-    public function updateEstado(Request $request, $id){
-    $request->validate([
-        'estado' => 'required|string|in:En proceso de aceptación,Aceptado,Denegado'
-    ]);
+    public function getResidenteByIdUsuario($id_usuario)
+   {
+    $residente = Residente::where('id_usuario', $id_usuario)->first();
 
-    $evento = Evento::findOrFail($id);
-    $evento->estado = $request->estado;
-    $evento->save();
+    if (!$residente) {
+        return response()->json(['message' => 'Residente no encontrado'], 404);
+    }
 
-    return response()->json($evento, 200);
+    return response()->json($residente);
     }
 
 }

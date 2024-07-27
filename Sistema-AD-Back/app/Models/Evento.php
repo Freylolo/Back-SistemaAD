@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property int $id_evento
  * @property int $id_usuario
+ * @property int $id_residente
  * @property string $nombre
  * @property string $apellidos
  * @property string $celular
@@ -48,6 +49,7 @@ class Evento extends Model
  
 	protected $fillable = [
         'id_usuario',
+        'id_residente',
 		'nombre',
 		'apellidos',
 		'celular',

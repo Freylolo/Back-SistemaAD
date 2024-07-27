@@ -44,6 +44,8 @@ Route::get('/alicuotas/{id}', [AlicuotaController::class, 'show']);
 Route::post('/alicuotas', [AlicuotaController::class, 'store']);
 Route::put('/alicuotas/{id}', [AlicuotaController::class, 'update']);
 Route::delete('/alicuotas/{id}', [AlicuotaController::class, 'destroy']);
+Route::get('/alicuotas/residente/{id_residente}', [AlicuotaController::class, 'getAlicuotasByIdResidente']);
+
 
 // Ruta para obtener el total adeudado por un residente
 Route::get('/alicuotas/total/{id_residente}', [AlicuotaController::class, 'getTotalAdeudado']);
@@ -61,6 +63,7 @@ Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
 // Rutas para ResidenteController
 Route::get('/residentes', [ResidenteController::class, 'index']);
 Route::get('/residentes/{id}', [ResidenteController::class, 'show']);
+Route::get('/eventos/residente/{id_usuario}', [EventoController::class, 'getResidenteByIdUsuario']);
 Route::post('/residentes', [ResidenteController::class, 'store']);
 Route::put('/residentes/{id}', [ResidenteController::class, 'update']);
 Route::delete('/residentes/{id}', [ResidenteController::class, 'destroy']);
@@ -106,3 +109,8 @@ Route::patch('/eventos/{id}/estado', [EventoController::class, 'updateEstado']);
 
 Route::get('/usuarios/username/{username}', [UsuarioController::class, 'getUserIdByUsername']);
 
+// Ruta para solicitar el restablecimiento de contraseña
+Route::post('usuarios/request-password-reset', [UsuarioController::class, 'requestPasswordReset']);
+
+// Ruta para restablecer la contraseña
+Route::post('usuarios/reset-password', [UsuarioController::class, 'resetPassword']);

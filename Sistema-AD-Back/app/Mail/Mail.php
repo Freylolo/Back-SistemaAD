@@ -49,7 +49,7 @@ class Mail extends Mailable
      */
      public function content(): Content
     {
-        $defaultMessage = "Le saluda Administracion de Camino Real, se adjuntara invitaciones Qr de sus invitados.";
+        $defaultMessage = "Le saluda Administracion de Camino Real.";
         return new Content(
             view: 'emails.qrcode',
             with: [
@@ -98,4 +98,6 @@ class Mail extends Mailable
 
         return $mail;
     }
+
+    
 }
