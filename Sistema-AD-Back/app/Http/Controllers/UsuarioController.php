@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use App\Mail\PasswordResetMail;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Http\Request;
 
@@ -143,59 +146,63 @@ class UsuarioController extends Controller
     }
 
     public function requestPasswordReset(Request $request)
-    {
-        $request->validate([
-            'correo' => 'required|email'
-        ]);
-    
-        $user = Usuario::where('correo_electronico', $request->correo)->first();
-    
-        if (!$user) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-    
-        $token = Str::random(60);
-        $user->update(['password_reset_token' => $token]);
-    
-        $resetLink = url('/reset-password?token=' . $token . '&email=' . urlencode($request->correo));
-    
-        // Enviar correo
-        Mail::to($request->correo)->send(new PasswordResetMail($resetLink));
-    
-        return response()->json(['message' => 'Se ha enviado un enlace para restablecer la contraseña.']);
-    }
-    
+{
+    // Validar la solicitud
+    $request->validate([
+        'correo' => 'required|email',
+    ]);
 
-    public function resetPassword(Request $request)
-    {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'new_password' => 'required|string|min:8'
-        ]);
+    // Buscar el usuario por correo electrónico
+    $usuario = Usuario::where('correo_electronico', $request->correo)->first();
 
-        $user = Usuario::where('correo_electronico', $request->email)
-                       ->where('password_reset_token', $request->token)
-                       ->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'Token o correo electrónico inválidos'], 400);
-        }
-
-        $user->update([
-            'contrasena' => Hash::make($request->new_password),
-            'password_reset_token' => null
-        ]);
-
-        return response()->json(['message' => 'Contraseña restablecida exitosamente']);
+    // Verificar si el usuario existe
+    if (!$usuario) {
+        \Log::info('Correo electrónico no encontrado:', ['correo' => $request->correo]);
+        return response()->json(['error' => 'Correo electrónico no encontrado'], 404);
     }
 
-    public function showResetPasswordForm(Request $request)
-    {
-    $token = $request->query('token');
-    return view('auth.reset_password', ['token' => $token]);
+    // Generar un token usando Str::random()
+    $token = Str::random(60);
+
+    // Guardar el token en el usuario
+    $usuario->update(['password_reset_token' => $token]);
+
+    // Crear el enlace de restablecimiento
+    $resetLink = env('FRONTEND_URL') . "/reset-password?token={$token}";
+
+    // Enviar correo electrónico
+    \Mail::to($usuario->correo_electronico)
+        ->send(new PasswordResetMail($resetLink, $usuario->nombre));
+
+    \Log::info('Enlace de restablecimiento enviado:', ['correo' => $usuario->correo_electronico, 'resetLink' => $resetLink]);
+
+    return response()->json(['message' => 'Enlace de restablecimiento de contraseña enviado']);
+}
+
+
+
+public function resetPassword(Request $request)
+{
+    $request->validate([
+        'token' => 'required',
+        'new_password' => 'required|string|min:8|confirmed'
+    ]);
+
+    $usuario = Usuario::where('password_reset_token', $request->token)->first();
+
+    if (!$usuario) {
+        \Log::info('Token inválido o usuario no encontrado:', ['token' => $request->token]);
+        return response()->json(['error' => 'Token inválido'], 400);
     }
 
+    $usuario->update([
+        'contrasena' => Hash::make($request->new_password),
+        'password_reset_token' => null
+    ]);
 
+    \Log::info('Contraseña restablecida exitosamente:', ['correo' => $usuario->correo_electronico]);
+
+    return response()->json(['message' => 'Contraseña restablecida exitosamente']);
+}
 
 }

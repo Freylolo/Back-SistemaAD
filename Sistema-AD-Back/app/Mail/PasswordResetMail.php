@@ -13,19 +13,19 @@ class PasswordResetMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    /**
-     * Create a new message instance.
-     */
     public $resetLink;
+    public $username;
 
     /**
      * Create a new message instance.
      *
      * @param string $resetLink
+     * @param string $username
      */
-    public function __construct($resetLink)
+    public function __construct($resetLink, $username)
     {
         $this->resetLink = $resetLink;
+        $this->username = $username;
     }
 
     /**
@@ -48,9 +48,10 @@ class PasswordResetMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.password_reset',
+            view: 'emails.reset_password',
             with: [
                 'resetLink' => $this->resetLink,
+                'username' => $this->username,
             ],
         );
     }

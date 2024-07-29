@@ -1,6 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\SmsController;
+use App\Http\Controllers\WsmsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -30,3 +34,6 @@ Route::get('uploads/{filename}', function ($filename) {
 
     return response($file, 200)->header("Content-Type", $type);
 });
+
+Route::post('/send-sms', [SmsController::class, 'sendSms']);
+Route::post('/send-whatsapp', [WsmsController::class, 'sendWhatsAppMessage']);

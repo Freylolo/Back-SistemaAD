@@ -7,6 +7,9 @@ use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\ControlAccesoController;
 use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SmsController;
+use App\Http\Controllers\WsmsController;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -109,8 +112,10 @@ Route::patch('/eventos/{id}/estado', [EventoController::class, 'updateEstado']);
 
 Route::get('/usuarios/username/{username}', [UsuarioController::class, 'getUserIdByUsername']);
 
-// Ruta para solicitar el restablecimiento de contraseña
-Route::post('usuarios/request-password-reset', [UsuarioController::class, 'requestPasswordReset']);
+Route::post('/usuarios/solicitar-restablecimiento', [UsuarioController::class, 'requestPasswordReset']);
+Route::post('/usuarios/restablecer-contrasena', [UsuarioController::class, 'resetPassword']);
 
-// Ruta para restablecer la contraseña
-Route::post('usuarios/reset-password', [UsuarioController::class, 'resetPassword']);
+Route::post('/send-sms', [SmsController::class, 'sendSms']);
+Route::post('/send-whatsapp', [WsmsController::class, 'sendWhatsAppMessage']);
+
+

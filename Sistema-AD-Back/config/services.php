@@ -31,4 +31,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'twilio' => [
+        'sid_sms' => env('TWILIO_SID_SMS'),
+        'token_sms' => env('TWILIO_TOKEN_SMS'),
+        'from_sms' => env('TWILIO_FROM_SMS'),
+        'sid_whatsapp' => env('TWILIO_SID_WHATSAPP'),
+        'token_whatsapp' => env('TWILIO_TOKEN_WHATSAPP'),
+        'from_whatsapp' => env('TWILIO_FROM_WHATSAPP'),
+    ],
+
 ];

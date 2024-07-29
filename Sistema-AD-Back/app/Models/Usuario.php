@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $correo_electronico
  * @property string $contrasena
  * @property string $rol
+ * @property string $password_reset_token
  * 
  * @property Collection|Evento[] $eventos
  *
@@ -38,7 +39,8 @@ class Usuario extends Model
 		'apellido',
 		'correo_electronico',
 		'contrasena',
-		'rol'
+		'rol',
+		'password_reset_token'
 		
 	];
 
@@ -47,14 +49,4 @@ class Usuario extends Model
 		return $this->hasMany(Evento::class, 'id_usuario');
 	}
 
-	public function getUserIdByUsername($username)
-{
-    $usuario = Usuario::where('username', $username)->first();
-
-    if (!$usuario) {
-        return response()->json(['error' => 'Usuario no encontrado'], 404);
-    }
-
-    return response()->json(['id_usuario' => $usuario->id_usuario], 200);
-}
 }
