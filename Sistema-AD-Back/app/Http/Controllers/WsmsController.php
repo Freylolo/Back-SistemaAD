@@ -33,4 +33,6 @@ class WsmsController extends Controller
 
         return response()->json(['sid' => $sid]);
     }
+
+    
 }

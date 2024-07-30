@@ -86,32 +86,46 @@ class ControlAccesoController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        $controlAcceso = ControlAcceso::find($id);
+{
+    // Verifica los datos recibidos
+    \Log::info('Datos recibidos para actualizar usuario:', $request->all());
 
-        if (!$controlAcceso) {
-            return response()->json(['message' => 'Registro no encontrado'], 404);
-        }
+    // Validación de los datos
+    $request->validate([
+        'perfil' => 'sometimes|required|string|max:255',
+        'username' => 'sometimes|required|string|max:255|unique:usuarios,username,' . $id,
+        'nombre' => 'sometimes|required|string|max:255',
+        'apellido' => 'sometimes|required|string|max:255',
+        'correo_electronico' => 'sometimes|required|email|unique:usuarios,correo_electronico,' . $id,
+        'contrasena' => 'sometimes|required|string|min:8',
+        'rol' => 'sometimes|required|string|max:50',
+    ]);
 
-        $validated = $request->validate([
-            'id_usuario' => 'required|exists:usuarios,id_usuario',
-            'nombre' => 'required|string|max:50',
-            'apellidos' => 'required|string|max:50',
-            'cedula' => 'required|string|max:10',
-            'sexo' => 'required|in:M,F,Indefinido',
-            'placas' => 'required|string|max:10',
-            'direccion' => 'required|string|max:255',
-            'ingresante' => 'required|in:Residente,Visitante,Delivery',
-            'fecha_ingreso' => 'required|date',
-            'fecha_salida' => 'nullable|date',
-            'observaciones' => 'nullable|string',
-            'username' => 'required|string|max:50',
-        ]);
+    // Busca el usuario por ID
+    $usuario = Usuario::findOrFail($id);
 
-        $controlAcceso->update($validated);
-
-        return response()->json($controlAcceso);
+    // Actualiza los datos
+    $data = $request->all();
+    if (isset($data['contrasena'])) {
+        $data['contrasena'] = Hash::make($data['contrasena']);
+    } else {
+        unset($data['contrasena']);
     }
+
+    // Guardar los cambios
+    try {
+        $usuario->update($data);
+        \Log::info('Usuario actualizado exitosamente:', $usuario->toArray());
+    } catch (\Exception $e) {
+        \Log::error('Error al actualizar el usuario:', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Error al actualizar el usuario'], 500);
+    }
+
+    return response()->json($usuario, 200);
+}
+
+
+
 
     /**
      * Remove the specified resource from storage.

@@ -37,7 +37,7 @@ class Personal extends Model
 		'perfil',
 		'observaciones',
 		'celular',
-
+		'correo_electronico',
 	];
 
 	public function usuario()

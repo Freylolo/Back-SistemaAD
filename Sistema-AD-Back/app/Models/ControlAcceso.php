@@ -33,7 +33,7 @@ class ControlAcceso extends Model
     
     protected $table = 'control_acceso'; // Nombre correcto de la tabla
     protected $primaryKey = 'id_acceso'; // Clave primaria personalizada
-    public $timestamps = true; // Si usas timestamps, ajusta según tu esquema
+    public $timestamps = false;
 
     protected $fillable = [
         'id_usuario',
@@ -48,6 +48,13 @@ class ControlAcceso extends Model
         'fecha_salida',
         'observaciones',
         'username'
+    ];
+    
+    protected $dates = [
+        'fecha_ingreso',
+        'fecha_salida',
+        'created_at',
+        'updated_at'
     ];
 
     public function usuario()

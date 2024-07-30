@@ -71,13 +71,22 @@ class AlicuotaController extends Controller
             'fecha' => 'sometimes|required|date',
             'mes' => 'required|in:Enero,Febrero,Marzo,Abril,Mayo,Junio,Julio,Agosto,Septiembre,Octubre,Noviembre,Diciembre',
             'monto_por_cobrar' => 'sometimes|required|numeric',
+            'pagado' => 'sometimes|required|boolean',
         ]);
-
+    
         $alicuota = Alicuota::findOrFail($id);
-        $alicuota->update($request->all());
+        
+        $alicuota->update([
+            'id_residente' => $request->input('id_residente', $alicuota->id_residente),
+            'fecha' => $request->input('fecha', $alicuota->fecha),
+            'mes' => $request->input('mes', $alicuota->mes),
+            'monto_por_cobrar' => $request->input('monto_por_cobrar', $alicuota->monto_por_cobrar),
+            'pagado' => $request->input('pagado', $alicuota->pagado), 
+        ]);
+    
         return response()->json($alicuota, 200);
     }
-
+    
     /**
      * Remove the specified resource from storage.
      */
@@ -91,16 +100,16 @@ class AlicuotaController extends Controller
     public function marcarPago($id_alicuota)
     {
         $alicuota = Alicuota::findOrFail($id_alicuota);
-        $alicuota->pagado = true;
+        $alicuota->pagado = true; // Marca como pagado
         $alicuota->save();
-
+    
         // Calcular la deuda total restante para el residente
         $totalAdeudado = Alicuota::where('id_residente', $alicuota->id_residente)
             ->where('pagado', false)
             ->sum('monto_por_cobrar');
-
+    
         return response()->json(['message' => 'Pago registrado exitosamente', 'totalAdeudado' => $totalAdeudado], 200);
-    }
+    }    
 
     public function getAlicuotasByIdResidente($id_residente)
     {

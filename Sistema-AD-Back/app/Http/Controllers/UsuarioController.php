@@ -53,7 +53,8 @@ class UsuarioController extends Controller
      */
     public function show(string $id)
     {
-        return Usuario::findOrFail($id);
+        return Usuario::where('id_usuario', $id)->firstOrFail();
+
     }
 
     /**
@@ -67,28 +68,43 @@ class UsuarioController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $request->validate([
-            'perfil' => 'sometimes|required|string|max:255',
-            'username' => 'sometimes|required|string|max:255|unique:usuarios,username,' . $id,
-            'nombre' => 'sometimes|required|string|max:255',
-            'apellido' => 'sometimes|required|string|max:255',
-            'correo_electronico' => 'sometimes|required|email|unique:usuarios,correo_electronico,' . $id,
-            'contrasena' => 'sometimes|required|string|min:8',
-            'rol' => 'sometimes|required|string|max:50',
-        ]);
-    
-        $usuario = Usuario::findOrFail($id);
-        $data = $request->all();
-        if (isset($data['contrasena'])) {
-            $data['contrasena'] = Hash::make($data['contrasena']);
-        } else {
-            unset($data['contrasena']);
-        }
-        $usuario->update($data);
-        return response()->json($usuario, 200);
+    public function update(Request $request, string $id_usuario)
+{
+    // Validación de los datos
+    $request->validate([
+        'perfil' => 'sometimes|required|string|max:255',
+        'username' => 'sometimes|required|string|max:255|unique:usuarios,username,' . $id_usuario . ',id_usuario',
+        'nombre' => 'sometimes|required|string|max:255',
+        'apellido' => 'sometimes|required|string|max:255',
+        'correo_electronico' => 'sometimes|required|email|unique:usuarios,correo_electronico,' . $id_usuario . ',id_usuario',
+        'contrasena' => 'sometimes|required|string|min:8',
+        'rol' => 'sometimes|required|string|max:50',
+    ]);
+
+    // Busca el usuario por ID
+    $usuario = Usuario::where('id_usuario', $id_usuario)->firstOrFail();
+
+    // Actualiza los datos
+    $data = $request->all();
+    if (isset($data['contrasena'])) {
+        $data['contrasena'] = Hash::make($data['contrasena']);
+    } else {
+        unset($data['contrasena']);
     }
+
+    // Guardar los cambios
+    try {
+        $usuario->update($data);
+    } catch (\Exception $e) {
+        \Log::error('Error al actualizar el usuario:', ['error' => $e->getMessage()]);
+        return response()->json(['error' => 'Error al actualizar el usuario'], 500);
+    }
+
+    return response()->json($usuario, 200);
+   }
+
+    
+    
 
     /**
      * Remove the specified resource from storage.

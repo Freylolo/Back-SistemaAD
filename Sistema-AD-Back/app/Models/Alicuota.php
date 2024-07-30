@@ -31,14 +31,16 @@ class Alicuota extends Model
 	protected $casts = [
 		'id_residente' => 'int',
 		'fecha' => 'datetime',
-		'monto_por_cobrar' => 'float'
+		'monto_por_cobrar' => 'float',
+		'pagado' => 'boolean',
 	];
 
 	protected $fillable = [
 		'id_residente',
 		'fecha',
 		'mes',
-		'monto_por_cobrar'
+		'monto_por_cobrar',
+		'pagado',
 	];
 
 	public function residente()

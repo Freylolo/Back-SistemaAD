@@ -94,44 +94,45 @@ class PersonalController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'id_usuario' => 'required|exists:usuarios,id_usuario',
-            'nombre' => 'sometimes|required|string|max:255',
-            'apellido' => 'sometimes|required|string|max:255',
-            'cedula' => 'sometimes|required|string|max:20|unique:personal,cedula,' . $id . ',id_personal',
-            'sexo' => 'sometimes|required|string|in:Masculino,Femenino',
-            'perfil' => 'sometimes|required|string|in:Seguridad,Administracion',
-            'observaciones' => 'nullable|string',
-            'celular' => 'sometimes|required|string|max:20',
-            'correo_electronico' => 'sometimes|required|string|email|max:255|unique:personal,correo_electronico,' . $id . ',id_personal',
-        ]);
+{
+    $validatedData = $request->validate([
+        'id_usuario' => 'required|exists:usuarios,id_usuario',
+        'nombre' => 'sometimes|required|string|max:50',
+        'apellido' => 'sometimes|required|string|max:50',
+        'cedula' => 'sometimes|required|string|max:10|unique:personal,cedula,' . $id . ',id_personal',
+        'sexo' => 'sometimes|required|string|in:Masculino,Femenino',
+        'perfil' => 'sometimes|required|string|in:Seguridad,Administracion',
+        'observaciones' => 'nullable|string',
+        'celular' => 'sometimes|required|string|max:20',
+        'correo_electronico' => 'nullable|string|email|max:100|unique:personal,correo_electronico,' . $id . ',id_personal',
+    ]);
 
-        try {
-            $personal = Personal::findOrFail($id);
+    try {
+        $personal = Personal::findOrFail($id);
 
-            // Formatear el número de celular
-            if (isset($validatedData['celular'])) {
-                $celular = $validatedData['celular'];
-                if (preg_match('/^0\d{9}$/', $celular)) {
-                    $celular = '+593' . substr($celular, 1);
-                } elseif (preg_match('/^\d{9}$/', $celular)) {
-                    $celular = '+593' . $celular;
-                }
-                $validatedData['celular'] = $celular;
-
-                // Verificar si el número de celular ya existe
-                if (Personal::where('celular', $celular)->where('id_personal', '!=', $id)->exists()) {
-                    return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
-                }
+        // Formatear el número de celular
+        if (isset($validatedData['celular'])) {
+            $celular = $validatedData['celular'];
+            if (preg_match('/^0\d{9}$/', $celular)) {
+                $celular = '+593' . substr($celular, 1);
+            } elseif (preg_match('/^\d{9}$/', $celular)) {
+                $celular = '+593' . $celular;
             }
+            $validatedData['celular'] = $celular;
 
-            $personal->update($validatedData);
-            return response()->json($personal, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al actualizar el personal', 'details' => $e->getMessage()], 500);
+            // Verificar si el número de celular ya existe
+            if (Personal::where('celular', $celular)->where('id_personal', '!=', $id)->exists()) {
+                return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
+            }
         }
+
+        $personal->update($validatedData);
+        return response()->json($personal, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al actualizar el personal', 'details' => $e->getMessage()], 500);
     }
+}
+
 
     /**
      * Remove the specified resource from storage.
