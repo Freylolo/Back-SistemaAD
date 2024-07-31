@@ -70,6 +70,8 @@ Route::get('/eventos/residente/{id_usuario}', [EventoController::class, 'getResi
 Route::post('/residentes', [ResidenteController::class, 'store']);
 Route::put('/residentes/{id}', [ResidenteController::class, 'update']);
 Route::delete('/residentes/{id}', [ResidenteController::class, 'destroy']);
+Route::get('/residentes/placa/{placa}', [ResidenteController::class, 'getResidentePorPlaca']);
+
 
 // Rutas para ControlAccesoController
 Route::get('/control-acceso', [ControlAccesoController::class, 'index']);

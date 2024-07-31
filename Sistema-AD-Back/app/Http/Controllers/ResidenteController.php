@@ -168,4 +168,23 @@ class ResidenteController extends Controller
         return response()->json($residente);
     }
 
+    public function getResidentePorPlaca($placa)
+   {
+    // Transformar la placa ingresada a minúsculas y eliminar guiones
+    $placa = strtolower(str_replace('-', '', $placa));
+
+    // Buscar al residente basado en la placa del vehículo
+    $residente = Residente::whereRaw('LOWER(REPLACE(vehiculo1_placa, "-", "")) = ?', [$placa])
+        ->orWhereRaw('LOWER(REPLACE(vehiculo2_placa, "-", "")) = ?', [$placa])
+        ->orWhereRaw('LOWER(REPLACE(vehiculo3_placa, "-", "")) = ?', [$placa])
+        ->first();
+    
+    if ($residente) {
+        return response()->json($residente);
+    } else {
+        return response()->json(['message' => 'Residente no encontrado'], 404);
+    }
+   }
+
+
 }
