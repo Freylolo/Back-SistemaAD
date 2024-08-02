@@ -183,35 +183,32 @@ class UsuarioController extends Controller
     }
 
     public function requestPasswordReset(Request $request)
-    {
-        $request->validate([
-            'correo' => 'required|email',
-        ]);
+{
+    $request->validate([
+        'correo' => 'required|email'
+    ]);
 
-        $usuario = Usuario::where('correo_electronico', $request->correo)->first();
+    $user = Usuario::where('correo_electronico', $request->correo)->first();
 
-        if (!$usuario) {
-            \Log::info('Correo electrónico no encontrado:', ['correo' => $request->correo]);
-            return response()->json(['error' => 'Correo electrónico no encontrado'], 404);
-        }
-
-        $token = Str::random(60);
-        $usuario->update(['password_reset_token' => $token]);
-
-        $resetLink = env('FRONTEND_URL') . "/reset-password?token={$token}";
-
-        try {
-            \Mail::to($usuario->correo_electronico)
-                ->send(new PasswordResetMail($resetLink, $usuario->nombre));
-        } catch (\Exception $e) {
-            \Log::error('Error al enviar el correo de restablecimiento:', ['error' => $e->getMessage()]);
-            return response()->json(['error' => 'Error al enviar el correo de restablecimiento'], 500);
-        }
-
-        \Log::info('Enlace de restablecimiento enviado:', ['correo' => $usuario->correo_electronico, 'resetLink' => $resetLink]);
-
-        return response()->json(['message' => 'Enlace de restablecimiento de contraseña enviado']);
+    if (!$user) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
     }
+
+    $token = Str::random(60);
+    $user->update(['password_reset_token' => $token]);
+
+    // Construir el enlace de restablecimiento usando la variable de entorno FRONTEND_URL
+    $resetLink =('http://localhost:4200') . '/reset-password?token=' . $token;
+    \Log::info('FRONTEND_URL:', ['url' => env('FRONTEND_URL')]);
+    \Log::info('Reset Link:', ['link' => $resetLink]);
+
+    // Enviar el correo
+    Mail::to($request->correo)->send(new PasswordResetMail($resetLink, $user->nombre));
+
+    return response()->json(['message' => 'Se ha enviado un enlace para restablecer la contraseña.']);
+
+}
+
 
     public function resetPassword(Request $request)
     {
