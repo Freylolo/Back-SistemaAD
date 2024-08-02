@@ -14,8 +14,6 @@ use Illuminate\Database\Eloquent\Model;
  * 
  * @property int $id_usuario
  * @property int $id_residente
- * @property string $nombre
- * @property string $apellido
  * @property string $cedula
  * @property string $sexo
  * @property string $perfil
@@ -23,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $solar
  * @property string $m2
  * @property string $celular
- * @property string|null $correo_electronico
  * @property int $cantidad_vehiculos
  * @property string|null $vehiculo1_placa
  * @property string|null $vehiculo1_observaciones
@@ -49,25 +46,22 @@ class Residente extends Model
 
 	protected $fillable = [
         'id_usuario',
-		'nombre',
-		'apellido',
-		'cedula',
-		'sexo',
-		'perfil',
-		'direccion',
-		'solar' ,
-		'm2' ,
-		'celular',
-		'correo_electronico',
-		'cantidad_vehiculos',
-		'vehiculo1_placa',
-		'vehiculo1_observaciones',
-		'vehiculo2_placa',
-		'vehiculo2_observaciones',
-		'vehiculo3_placa',
-		'vehiculo3_observaciones',
-		'observaciones'
-	];
+        'cedula',
+        'sexo',
+        'perfil',
+        'direccion',
+        'solar',
+        'm2',
+        'celular',
+        'cantidad_vehiculos',
+        'vehiculo1_placa',
+        'vehiculo1_observaciones',
+        'vehiculo2_placa',
+        'vehiculo2_observaciones',
+        'vehiculo3_placa',
+        'vehiculo3_observaciones',
+        'observaciones'
+    ];
 
 	public function alicuotas()
 	{

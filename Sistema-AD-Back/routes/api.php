@@ -98,6 +98,8 @@ Route::get('/residentes/check-celularR/{celular}', [ResidenteController::class, 
 // Ruta para verificar correo en usuarios:
 Route::get('/usuarios/check-correo-usuarios/{correo_electronico}', [UsuarioController::class, 'checkCorreoUsuarios']);
 Route::post('/usuarios/getUserIdByEmail', [UsuarioController::class, 'getUserIdByEmail']);
+Route::get('/usuarios/check-username-usuarios/{username}', [UsuarioController::class, 'checkUsernameUsuarios']);
+
 
 // Ruta para obtener el usuario seguridad
 Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad']);

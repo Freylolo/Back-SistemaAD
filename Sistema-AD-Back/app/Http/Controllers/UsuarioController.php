@@ -1,12 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Usuario;
+use App\Models\Residente;
+use App\Models\Personal;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMail;
 use Illuminate\Support\Facades\Mail;
-
 use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
@@ -48,13 +50,13 @@ class UsuarioController extends Controller
         return response()->json($usuario, 201);
     }
 
+
     /**
      * Display the specified resource.
      */
     public function show(string $id)
     {
         return Usuario::where('id_usuario', $id)->firstOrFail();
-
     }
 
     /**
@@ -69,64 +71,83 @@ class UsuarioController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id_usuario)
-{
-    // Validación de los datos
-    $request->validate([
-        'perfil' => 'sometimes|required|string|max:255',
-        'username' => 'sometimes|required|string|max:255|unique:usuarios,username,' . $id_usuario . ',id_usuario',
-        'nombre' => 'sometimes|required|string|max:255',
-        'apellido' => 'sometimes|required|string|max:255',
-        'correo_electronico' => 'sometimes|required|email|unique:usuarios,correo_electronico,' . $id_usuario . ',id_usuario',
-        'contrasena' => 'sometimes|required|string|min:8',
-        'rol' => 'sometimes|required|string|max:50',
-    ]);
+    {
+        $request->validate([
+            'perfil' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255|unique:usuarios,username,' . $id_usuario . ',id_usuario',
+            'nombre' => 'sometimes|required|string|max:255',
+            'apellido' => 'sometimes|required|string|max:255',
+            'correo_electronico' => 'sometimes|required|email|unique:usuarios,correo_electronico,' . $id_usuario . ',id_usuario',
+            'contrasena' => 'sometimes|required|string|min:8',
+            'rol' => 'sometimes|required|string|max:50',
+        ]);
 
-    // Busca el usuario por ID
-    $usuario = Usuario::where('id_usuario', $id_usuario)->firstOrFail();
+        $usuario = Usuario::where('id_usuario', $id_usuario)->firstOrFail();
 
-    // Actualiza los datos
-    $data = $request->all();
-    if (isset($data['contrasena'])) {
-        $data['contrasena'] = Hash::make($data['contrasena']);
-    } else {
-        unset($data['contrasena']);
+        $data = $request->all();
+        if (isset($data['contrasena'])) {
+            $data['contrasena'] = Hash::make($data['contrasena']);
+        } else {
+            unset($data['contrasena']);
+        }
+
+        try {
+            $usuario->update($data);
+        } catch (\Exception $e) {
+            \Log::error('Error al actualizar el usuario:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error al actualizar el usuario'], 500);
+        }
+
+        return response()->json($usuario, 200);
     }
-
-    // Guardar los cambios
-    try {
-        $usuario->update($data);
-    } catch (\Exception $e) {
-        \Log::error('Error al actualizar el usuario:', ['error' => $e->getMessage()]);
-        return response()->json(['error' => 'Error al actualizar el usuario'], 500);
-    }
-
-    return response()->json($usuario, 200);
-   }
-
-    
-    
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        Usuario::destroy($id);
-        return response()->json(null, 204);
-    }
+        try {
+            // Encuentra el usuario
+            $usuario = Usuario::findOrFail($id);
+    
+            // Encuentra el residente asociado (si existe) y elimínalo
+            $residente = Residente::where('id_usuario', $id)->first();
+            if ($residente) {
+                $residente->delete();
+            }
+    
+            // Encuentra el personal asociado (si existe) y elimínalo
+            $personal = Personal::where('id_usuario', $id)->first();
+            if ($personal) {
+                $personal->delete();
+            }
+    
+            // Elimina el usuario
+            $usuario->delete();
+    
+            return response()->json(null, 204);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar el usuario', 'details' => $e->getMessage()], 500);
+        }
+    }    
 
     public function usuariosSeguridad()
     {
-    $usuariosSeguridad = Usuario::where('perfil', 'Seguridad')
-                                ->where('rol', 'Seguridad')
-                                ->get();
+        $usuariosSeguridad = Usuario::where('perfil', 'Seguridad')
+                                    ->where('rol', 'Seguridad')
+                                    ->get();
 
-    // Mensaje de depuración
-    if ($usuariosSeguridad->isEmpty()) {
-        return response()->json(['message' => 'No se encontraron usuarios con perfil y rol de seguridad.'], 404);
+        if ($usuariosSeguridad->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron usuarios con perfil y rol de seguridad.'], 404);
+        }
+
+        return response()->json($usuariosSeguridad);
     }
 
-    return response()->json($usuariosSeguridad);
+    public function checkUsernameUsuarios($username)
+    {
+        $exists = Usuario::where('username', $username)->exists();
+        return response()->json(['exists' => $exists]);
     }
 
     public function checkCorreoUsuarios($correo_electronico)
@@ -137,88 +158,82 @@ class UsuarioController extends Controller
 
     public function getUserIdByEmail(Request $request)
     {
-    $request->validate([
-        'correo_electronico' => 'required|email',
-    ]);
+        $request->validate([
+            'correo_electronico' => 'required|email',
+        ]);
 
-    $usuario = Usuario::where('correo_electronico', $request->correo_electronico)->first();
+        $usuario = Usuario::where('correo_electronico', $request->correo_electronico)->first();
 
-    if ($usuario) {
-        return response()->json(['id_usuario' => $usuario->id_usuario]);
-    } else {
-        return response()->json(['error' => 'Usuario no encontrado'], 404);
-    }
+        if ($usuario) {
+            return response()->json(['id_usuario' => $usuario->id_usuario]);
+        } else {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
     }
 
     public function getUserIdByUsername($username)
     {
-    $usuario = Usuario::where('username', $username)->first();
+        $usuario = Usuario::where('username', $username)->first();
 
-    if (!$usuario) {
-        return response()->json(['error' => 'Usuario no encontrado'], 404);
-    }
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
 
-    return response()->json(['id_usuario' => $usuario->id_usuario], 200);
+        return response()->json(['id_usuario' => $usuario->id_usuario], 200);
     }
 
     public function requestPasswordReset(Request $request)
-{
-    // Validar la solicitud
-    $request->validate([
-        'correo' => 'required|email',
-    ]);
+    {
+        $request->validate([
+            'correo' => 'required|email',
+        ]);
 
-    // Buscar el usuario por correo electrónico
-    $usuario = Usuario::where('correo_electronico', $request->correo)->first();
+        $usuario = Usuario::where('correo_electronico', $request->correo)->first();
 
-    // Verificar si el usuario existe
-    if (!$usuario) {
-        \Log::info('Correo electrónico no encontrado:', ['correo' => $request->correo]);
-        return response()->json(['error' => 'Correo electrónico no encontrado'], 404);
+        if (!$usuario) {
+            \Log::info('Correo electrónico no encontrado:', ['correo' => $request->correo]);
+            return response()->json(['error' => 'Correo electrónico no encontrado'], 404);
+        }
+
+        $token = Str::random(60);
+        $usuario->update(['password_reset_token' => $token]);
+
+        $resetLink = env('FRONTEND_URL') . "/reset-password?token={$token}";
+
+        try {
+            \Mail::to($usuario->correo_electronico)
+                ->send(new PasswordResetMail($resetLink, $usuario->nombre));
+        } catch (\Exception $e) {
+            \Log::error('Error al enviar el correo de restablecimiento:', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Error al enviar el correo de restablecimiento'], 500);
+        }
+
+        \Log::info('Enlace de restablecimiento enviado:', ['correo' => $usuario->correo_electronico, 'resetLink' => $resetLink]);
+
+        return response()->json(['message' => 'Enlace de restablecimiento de contraseña enviado']);
     }
 
-    // Generar un token usando Str::random()
-    $token = Str::random(60);
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'new_password' => 'required|string|min:8|confirmed'
+        ]);
 
-    // Guardar el token en el usuario
-    $usuario->update(['password_reset_token' => $token]);
+        $usuario = Usuario::where('password_reset_token', $request->token)->first();
 
-    // Crear el enlace de restablecimiento
-    $resetLink = env('FRONTEND_URL') . "/reset-password?token={$token}";
+        if (!$usuario) {
+            \Log::info('Token inválido o usuario no encontrado:', ['token' => $request->token]);
+            return response()->json(['error' => 'Token inválido'], 400);
+        }
 
-    // Enviar correo electrónico
-    \Mail::to($usuario->correo_electronico)
-        ->send(new PasswordResetMail($resetLink, $usuario->nombre));
+        $usuario->update([
+            'contrasena' => Hash::make($request->new_password),
+            'password_reset_token' => null
+        ]);
 
-    \Log::info('Enlace de restablecimiento enviado:', ['correo' => $usuario->correo_electronico, 'resetLink' => $resetLink]);
+        \Log::info('Contraseña restablecida exitosamente:', ['correo' => $usuario->correo_electronico]);
 
-    return response()->json(['message' => 'Enlace de restablecimiento de contraseña enviado']);
-}
-
-
-
-public function resetPassword(Request $request)
-{
-    $request->validate([
-        'token' => 'required',
-        'new_password' => 'required|string|min:8|confirmed'
-    ]);
-
-    $usuario = Usuario::where('password_reset_token', $request->token)->first();
-
-    if (!$usuario) {
-        \Log::info('Token inválido o usuario no encontrado:', ['token' => $request->token]);
-        return response()->json(['error' => 'Token inválido'], 400);
+        return response()->json(['message' => 'Contraseña restablecida exitosamente']);
     }
-
-    $usuario->update([
-        'contrasena' => Hash::make($request->new_password),
-        'password_reset_token' => null
-    ]);
-
-    \Log::info('Contraseña restablecida exitosamente:', ['correo' => $usuario->correo_electronico]);
-
-    return response()->json(['message' => 'Contraseña restablecida exitosamente']);
-}
-
 }

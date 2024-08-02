@@ -49,4 +49,19 @@ class Usuario extends Model
 		return $this->hasMany(Evento::class, 'id_usuario');
 	}
 
+	 public function residente()
+    {
+        return $this->hasOne(Residente::class, 'id_usuario', 'id_usuario');
+    }
+
+    public function personal()
+    {
+        return $this->hasOne(Personal::class, 'id_usuario', 'id_usuario');
+    }
+
+    public function controlAcceso()
+    {
+        return $this->hasOne(ControlAcceso::class, 'id_usuario', 'id_usuario');
+    }
+
 }

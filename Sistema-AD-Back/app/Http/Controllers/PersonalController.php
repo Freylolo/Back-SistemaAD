@@ -14,7 +14,8 @@ class PersonalController extends Controller
      */
     public function index()
     {
-        return Personal::all(); 
+        $personal = Personal::with('usuario')->get(); 
+        return response()->json($personal);
     }
 
     /**
@@ -32,14 +33,11 @@ class PersonalController extends Controller
     {
         $validatedData = $request->validate([
             'id_usuario' => 'required|exists:usuarios,id_usuario',
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
             'cedula' => 'required|string|max:20|unique:personal,cedula',
             'sexo' => 'required|string|in:Masculino,Femenino',
             'perfil' => 'required|string|in:Seguridad,Administracion',
             'observaciones' => 'nullable|string',
             'celular' => 'required|string|max:20',
-            'correo_electronico' => 'sometimes|required|string|email|max:255|unique:personal,correo_electronico',
         ]);
 
         $user = Usuario::find($validatedData['id_usuario']);
@@ -63,23 +61,23 @@ class PersonalController extends Controller
 
         try {
             $personal = Personal::create(array_merge($validatedData, ['celular' => $celular]));
-            return response()->json($personal, 201);
+            return response()->json($personal->load('usuario'), 201); // Cargar la relación de usuario
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al crear el personal', 'details' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * Display the specified resource.
      */
     public function show($id)
     {
-        try {
-            $personal = Personal::findOrFail($id);
-            return response()->json($personal, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Personal no encontrado', 'details' => $e->getMessage()], 404);
-        }
+        $personal = Personal::with('usuario') // Asegúrate de que la relación esté correctamente definida
+        ->where('id_personal', $id)
+        ->firstOrFail();
+
+        return response()->json($personal);
     }
 
     /**
@@ -94,44 +92,48 @@ class PersonalController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
-{
-    $validatedData = $request->validate([
-        'id_usuario' => 'required|exists:usuarios,id_usuario',
-        'nombre' => 'sometimes|required|string|max:50',
-        'apellido' => 'sometimes|required|string|max:50',
-        'cedula' => 'sometimes|required|string|max:10|unique:personal,cedula,' . $id . ',id_personal',
-        'sexo' => 'sometimes|required|string|in:Masculino,Femenino',
-        'perfil' => 'sometimes|required|string|in:Seguridad,Administracion',
-        'observaciones' => 'nullable|string',
-        'celular' => 'sometimes|required|string|max:20',
-        'correo_electronico' => 'nullable|string|email|max:100|unique:personal,correo_electronico,' . $id . ',id_personal',
-    ]);
-
-    try {
-        $personal = Personal::findOrFail($id);
-
-        // Formatear el número de celular
-        if (isset($validatedData['celular'])) {
-            $celular = $validatedData['celular'];
-            if (preg_match('/^0\d{9}$/', $celular)) {
-                $celular = '+593' . substr($celular, 1);
-            } elseif (preg_match('/^\d{9}$/', $celular)) {
-                $celular = '+593' . $celular;
-            }
-            $validatedData['celular'] = $celular;
-
-            // Verificar si el número de celular ya existe
-            if (Personal::where('celular', $celular)->where('id_personal', '!=', $id)->exists()) {
-                return response()->json(['error' => 'El número de celular ya está registrado.'], 400);
-            }
+    {
+        // Validar los datos de entrada
+        $validatedData = $request->validate([
+            'id_usuario' => 'required|exists:usuarios,id_usuario',
+            'nombre' => 'sometimes|required|string|max:255',
+            'apellido' => 'sometimes|required|string|max:255',
+            'cedula' => 'sometimes|required|string|max:20|unique:personal,cedula,' . $id . ',id_personal',
+            'sexo' => 'sometimes|required|string|max:10',
+            'perfil' => 'sometimes|required|string|max:255',
+            'celular' => 'sometimes|required|string|max:20',
+            'correo_electronico' => 'sometimes|required|string|email|max:255',
+            'observaciones' => 'nullable|string',
+        ]);
+    
+        try {
+            // Encontrar el personal por ID
+            $personal = Personal::findOrFail($id);
+    
+            // Actualizar la información del personal
+            $personal->update($validatedData);
+    
+            // Actualizar la información del usuario asociado
+            $usuario = Usuario::findOrFail($validatedData['id_usuario']);
+            $usuario->update([
+                'nombre' => $request->input('nombre'),
+                'apellido' => $request->input('apellido'),
+                'correo_electronico' => $request->input('correo_electronico'),
+            ]);
+    
+            // Retornar la respuesta con la información actualizada
+            return response()->json([
+                'personal' => $personal,
+                'usuario' => $usuario
+            ], 200);
+    
+        } catch (\Exception $e) {
+            // Registrar el error y retornar una respuesta con el error
+            \Log::error('Error al actualizar el personal: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al actualizar el personal', 'details' => $e->getMessage()], 500);
         }
-
-        $personal->update($validatedData);
-        return response()->json($personal, 200);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error al actualizar el personal', 'details' => $e->getMessage()], 500);
     }
-}
+    
 
 
     /**
@@ -141,7 +143,13 @@ class PersonalController extends Controller
     {
         try {
             $personal = Personal::findOrFail($id);
+    
+            // Elimina el usuario asociado
+            if ($personal->id_usuario) {
+                Personal::where('id_usuario', $personal->id_usuario)->delete();
+            }
             $personal->delete();
+    
             return response()->json(null, 204);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al eliminar el personal', 'details' => $e->getMessage()], 500);

@@ -15,7 +15,8 @@ class ResidenteController extends Controller
      */
     public function index()
     {
-        return response()->json(Residente::all(), 200);
+        $residentes = Residente::with('usuario')->get(); 
+        return response()->json($residentes);
     }
 
     /**
@@ -30,55 +31,53 @@ class ResidenteController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'id_usuario' => 'required|exists:usuarios,id_usuario',
-            'nombre' => 'required|string|max:255',
-            'apellido' => 'required|string|max:255',
-            'cedula' => 'required|string|max:20|unique:residentes',
-            'sexo' => 'required|string|max:10',
-            'perfil' => 'required|string|max:255',
-            'direccion' => 'required|string|max:255',
-            'solar' => 'sometimes|required|string|max:255',
-            'm2' => 'sometimes|required|numeric|min:0',
-            'celular' => 'required|string|max:20',
-            'correo_electronico' => 'required|string|email|max:255|unique:residentes',
-            'cantidad_vehiculos' => 'required|integer',
-            'vehiculo1_placa' => 'nullable|string|max:20',
-            'vehiculo1_observaciones' => 'nullable|string',
-            'vehiculo2_placa' => 'nullable|string|max:20',
-            'vehiculo2_observaciones' => 'nullable|string',
-            'vehiculo3_placa' => 'nullable|string|max:20',
-            'vehiculo3_observaciones' => 'nullable|string',
-            'observaciones' => 'nullable|string',
-        ]);
+{
+    $validatedData = $request->validate([
+        'id_usuario' => 'required|exists:usuarios,id_usuario',
+        'cedula' => 'required|string|max:20|unique:residentes',
+        'sexo' => 'required|string|max:10',
+        'perfil' => 'required|string|max:255',
+        'direccion' => 'required|string|max:255',
+        'solar' => 'sometimes|required|string|max:255',
+        'm2' => 'sometimes|required|numeric|min:0',
+        'celular' => 'required|string|max:20',
+        'cantidad_vehiculos' => 'required|integer',
+        'vehiculo1_placa' => 'nullable|string|max:20',
+        'vehiculo1_observaciones' => 'nullable|string',
+        'vehiculo2_placa' => 'nullable|string|max:20',
+        'vehiculo2_observaciones' => 'nullable|string',
+        'vehiculo3_placa' => 'nullable|string|max:20',
+        'vehiculo3_observaciones' => 'nullable|string',
+        'observaciones' => 'nullable|string',
+    ]);
 
-        $user = Usuario::find($validatedData['id_usuario']);
+    $user = Usuario::find($validatedData['id_usuario']);
     
-        if (!$user) {
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
-        }
-
-        try {
-            $residente = Residente::create($validatedData);
-            return response()->json($residente, 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al crear el residente', 'details' => $e->getMessage()], 500);
-        }
+    if (!$user) {
+        return response()->json(['error' => 'Usuario no encontrado'], 404);
     }
+
+     try {
+        $residente = Residente::create($validatedData);
+        return response()->json([
+            'residente' => $residente,
+            'usuario' => $user
+         ], 201);
+     } catch (\Exception $e) {
+         return response()->json(['error' => 'Error al crear el residente', 'details' => $e->getMessage()], 500);
+     }
+   }
 
     /**
      * Display the specified resource.
      */
     public function show($id)
     {
-        $residente = Residente::find($id);
+        $residente = Residente::with('usuario') // Asegúrate de que la relación esté correctamente definida
+        ->where('id_residente', $id)
+        ->firstOrFail();
 
-        if ($residente) {
-            return response()->json($residente);
-        } else {
-            return response()->json(['message' => 'Residente no encontrado'], 404);
-        }
+        return response()->json($residente);
     }
 
     /**
@@ -92,59 +91,88 @@ class ResidenteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        $validatedData = $request->validate([
-            'id_usuario' => 'required|exists:usuarios,id_usuario',
-            'nombre' => 'sometimes|required|string|max:255',
-            'apellido' => 'sometimes|required|string|max:255',
-            'cedula' => 'sometimes|required|string|max:20|unique:residentes,cedula,' . $id . ',id_residente',
-            'sexo' => 'sometimes|required|string|max:10',
-            'perfil' => 'sometimes|required|string|max:255',
-            'direccion' => 'sometimes|required|string|max:255',
-            'solar' => 'sometimes|required|string|max:255',
-            'm2' => 'sometimes|required|numeric|min:0',
-            'celular' => 'sometimes|required|string|max:20',
-            'correo_electronico' => 'sometimes|required|string|email|max:255|unique:residentes,correo_electronico,' . $id . ',id_residente',
-            'cantidad_vehiculos' => 'sometimes|required|integer',
-            'vehiculo1_placa' => 'nullable|string|max:20',
-            'vehiculo1_observaciones' => 'nullable|string',
-            'vehiculo2_placa' => 'nullable|string|max:20',
-            'vehiculo2_observaciones' => 'nullable|string',
-            'vehiculo3_placa' => 'nullable|string|max:20',
-            'vehiculo3_observaciones' => 'nullable|string',
-            'observaciones' => 'nullable|string',
+    public function update(Request $request, $id)
+{
+    // Validar los datos de entrada
+    $validatedData = $request->validate([
+        'id_usuario' => 'required|exists:usuarios,id_usuario',
+        'nombre' => 'sometimes|required|string|max:255',
+        'apellido' => 'sometimes|required|string|max:255',
+        'cedula' => 'sometimes|required|string|max:20|unique:residentes,cedula,' . $id . ',id_residente',
+        'sexo' => 'sometimes|required|string|max:10',
+        'perfil' => 'sometimes|required|string|max:255',
+        'direccion' => 'sometimes|required|string|max:255',
+        'solar' => 'sometimes|required|string|max:255',
+        'm2' => 'sometimes|required|numeric|min:0',
+        'celular' => 'sometimes|required|string|max:20',
+        'correo_electronico' => 'sometimes|required|string|email|max:255',
+        'cantidad_vehiculos' => 'sometimes|required|integer',
+        'vehiculo1_placa' => 'nullable|string|max:20',
+        'vehiculo1_observaciones' => 'nullable|string',
+        'vehiculo2_placa' => 'nullable|string|max:20',
+        'vehiculo2_observaciones' => 'nullable|string',
+        'vehiculo3_placa' => 'nullable|string|max:20',
+        'vehiculo3_observaciones' => 'nullable|string',
+        'observaciones' => 'nullable|string',
+    ]);
+
+    // Encontrar el residente por ID
+    $residente = Residente::findOrFail($id);
+
+    try {
+        // Actualizar la información del residente
+        $residente->update($validatedData);
+
+        // Actualizar la información del usuario asociado
+        $usuario = Usuario::findOrFail($residente->id_usuario);
+        $usuario->update([
+            'nombre' => $request->input('nombre'),
+            'apellido' => $request->input('apellido'),
+            'correo_electronico' => $request->input('correo_electronico'),
         ]);
 
-        $residente = Residente::findOrFail($id);
-
-        try {
-            $residente->update($validatedData);
-            return response()->json($residente, 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Error al actualizar el residente', 'details' => $e->getMessage()], 500);
-        }
+        return response()->json($residente, 200);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al actualizar el residente', 'details' => $e->getMessage()], 500);
     }
+}
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-        Residente::destroy($id);
+{
+    try {
+        // Encuentra el residente
+        $residente = Residente::findOrFail($id);
+
+        // Elimina el usuario asociado
+        if ($residente->id_usuario) {
+            // Elimina el usuario asociado si no hay residentes restantes con el mismo id_usuario
+            Usuario::where('id_usuario', $residente->id_usuario)->delete();
+        }
+
+        // Elimina el residente
+        $residente->delete();
+
         return response()->json(null, 204);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al eliminar el residente', 'details' => $e->getMessage()], 500);
+    }
+}
+
+    
+
+    public function checkCorreo($correo_electronico)
+    {
+        $exists = Residente::where('correo_electronico', $correo_electronico)->exists();
+        return response()->json(['exists' => $exists]);
     }
 
     public function checkCedula($cedula)
     {
     $exists = Residente::where('cedula', $cedula)->exists();
     return response()->json(['exists' => $exists]);
-    }
-
-    public function checkCorreo($correo_electronico)
-    {
-        $exists = Residente::where('correo_electronico', $correo_electronico)->exists();
-        return response()->json(['exists' => $exists]);
     }
 
     public function checkCelularR($celular)
@@ -185,6 +213,5 @@ class ResidenteController extends Controller
         return response()->json(['message' => 'Residente no encontrado'], 404);
     }
    }
-
 
 }
