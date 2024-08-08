@@ -156,18 +156,54 @@ class PersonalController extends Controller
         }
     }
 
+/**
+ * Nombre de la función: `checkCedulaPersonal`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un número de cédula ya existe en la base de datos para la entidad `Personal`.
+ * Devuelve un JSON indicando si la cédula existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCedulaPersonal($cedula)
     {
         $exists = Personal::where('cedula', $cedula)->exists();
         return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `checkCorreoPersonal`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un correo electrónico ya existe en la base de datos para la entidad `Personal`.
+ * Devuelve un JSON indicando si el correo electrónico existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCorreoPersonal($correo_electronico)
     {
         $exists = Personal::where('correo_electronico', $correo_electronico)->exists();
         return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `checkCelular`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un número de celular ya existe en la base de datos para la entidad `Personal`.
+ * Devuelve un JSON indicando si el número de celular existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCelular($celular)
     {
         $exists = Personal::where('celular', $celular)->exists();

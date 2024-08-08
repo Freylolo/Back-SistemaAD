@@ -9,6 +9,18 @@ use App\Models\Usuario;
 
 class AuthController extends Controller
 {
+
+/**
+ * Nombre de la función: `login`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para autenticar a un usuario usando su nombre de usuario o correo electrónico y contraseña.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function login(Request $request)
     {
     // Validar la solicitud

@@ -186,11 +186,35 @@ class EventoController extends Controller
         return response()->json(null, 204);
     }
 
+/**
+ * Nombre de la función: `getFileUrl`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener la URL completa de un archivo almacenado en el directorio de `uploads`.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
+
     public function getFileUrl($filename)
     {
         return asset('uploads/' . $filename);
     }
 
+/**
+ * Nombre de la función: `downloadFile`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para descargar un archivo desde el directorio de `uploads`. Primero decodifica el nombre del archivo,
+ * verifica su existencia y, si está presente, lo envía como respuesta de descarga.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function downloadFile($filename)
     {
         $filename = urldecode($filename); // Decodifica el nombre del archivo
@@ -203,6 +227,18 @@ class EventoController extends Controller
         return response()->download($path);
     }
 
+/**
+ * Nombre de la función: `updateEstado`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para actualizar el estado de un evento. Valida el estado recibido y, si es válido, actualiza el estado
+ * del evento con el ID proporcionado.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function updateEstado(Request $request, $id)
     {
         $request->validate([
@@ -216,6 +252,18 @@ class EventoController extends Controller
         return response()->json($evento, 200);
     }
 
+/**
+ * Nombre de la función: `getResidenteByIdUsuario`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener un residente basado en el ID del usuario. Si el residente no se encuentra, devuelve un
+ * mensaje de error con un código de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function getResidenteByIdUsuario($id_usuario)
    {
     $residente = Residente::where('id_usuario', $id_usuario)->first();
@@ -223,7 +271,6 @@ class EventoController extends Controller
     if (!$residente) {
         return response()->json(['message' => 'Residente no encontrado'], 404);
     }
-
     return response()->json($residente);
     }
 

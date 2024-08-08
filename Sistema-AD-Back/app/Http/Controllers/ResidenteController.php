@@ -17,6 +17,7 @@ class ResidenteController extends Controller
     {
         $residentes = Residente::with('usuario')->get(); 
         return response()->json($residentes);
+        
     }
 
     /**
@@ -162,19 +163,54 @@ class ResidenteController extends Controller
 }
 
     
-
+/**
+ * Nombre de la función: `checkCorreo`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un correo electrónico ya existe en la base de datos para la entidad `Residente`.
+ * Devuelve un JSON indicando si el correo electrónico existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCorreo($correo_electronico)
     {
         $exists = Residente::where('correo_electronico', $correo_electronico)->exists();
         return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `checkCedula`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un número de cédula ya existe en la base de datos para la entidad `Residente`.
+ * Devuelve un JSON indicando si el número de cédula existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCedula($cedula)
     {
     $exists = Residente::where('cedula', $cedula)->exists();
     return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `checkCelularR`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un número de celular ya existe en la base de datos para la entidad `Residente`.
+ * Devuelve un JSON indicando si el número de celular existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCelularR($celular)
     {
         $residente = Residente::where('celular', $celular)->first();
@@ -186,6 +222,19 @@ class ResidenteController extends Controller
         }
     }
 
+/**
+ * Nombre de la función: `getResidenteById`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener un residente basado en el ID proporcionado. Incluye la relación con el modelo `usuario`. 
+ * Si el residente no se encuentra, devuelve un mensaje de error con un código de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
+
     public function getResidenteById($id_residente) {
         $residente = Residente::where('id_residente', $id_residente)
                                ->with('usuario') 
@@ -196,6 +245,20 @@ class ResidenteController extends Controller
         return response()->json($residente);
     }
 
+/**
+ * Nombre de la función: `getResidentePorPlaca`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener un residente basado en la placa del vehículo. La placa ingresada se transforma a minúsculas
+ * y se eliminan los guiones para realizar la búsqueda. Se busca en tres posibles campos de placa (`vehiculo1_placa`,
+ * `vehiculo2_placa`, `vehiculo3_placa`). Si el residente no se encuentra, devuelve un mensaje de error con un código
+ * de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function getResidentePorPlaca($placa)
    {
     // Transformar la placa ingresada a minúsculas y eliminar guiones

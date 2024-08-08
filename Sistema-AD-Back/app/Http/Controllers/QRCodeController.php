@@ -8,12 +8,19 @@ use App\Mail\Mail as MailClass; // Alias para tu clase Mail
 
 class QRCodeController extends Controller
 {
-    /**
-     * Enviar correo con el QR y PDF adjuntos.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+
+/**
+ * Nombre de la función: `enviarCorreo`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para enviar un correo electrónico con un asunto y texto proporcionados. La función valida la solicitud y,
+ * si es exitosa, envía el correo. Maneja excepciones y devuelve un mensaje de éxito o error según el resultado.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function enviarCorreo(Request $request)
     {
         $validated = $request->validate([

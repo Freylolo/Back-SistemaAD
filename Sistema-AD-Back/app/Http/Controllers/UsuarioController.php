@@ -130,7 +130,18 @@ class UsuarioController extends Controller
             return response()->json(['error' => 'Error al eliminar el usuario', 'details' => $e->getMessage()], 500);
         }
     }    
-
+/**
+ * Nombre de la función: `usuariosSeguridad`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener todos los usuarios con perfil y rol de "Seguridad". Si no se encuentran usuarios,
+ * devuelve un mensaje de error con un código de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function usuariosSeguridad()
     {
         $usuariosSeguridad = Usuario::where('perfil', 'Seguridad')
@@ -144,18 +155,54 @@ class UsuarioController extends Controller
         return response()->json($usuariosSeguridad);
     }
 
+/**
+ * Nombre de la función: `checkUsernameUsuarios`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un nombre de usuario ya existe en la base de datos para la entidad `Usuario`.
+ * Devuelve un JSON indicando si el nombre de usuario existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkUsernameUsuarios($username)
     {
         $exists = Usuario::where('username', $username)->exists();
         return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `checkCorreoUsuarios`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para verificar si un correo electrónico ya existe en la base de datos para la entidad `Usuario`.
+ * Devuelve un JSON indicando si el correo electrónico existe o no.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function checkCorreoUsuarios($correo_electronico)
     {
         $exists = Usuario::where('correo_electronico', $correo_electronico)->exists();
         return response()->json(['exists' => $exists]);
     }
 
+/**
+ * Nombre de la función: `getUserIdByEmail`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener el ID de un usuario basado en su correo electrónico. Si el usuario no se encuentra,
+ * devuelve un mensaje de error con un código de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */    
     public function getUserIdByEmail(Request $request)
     {
         $request->validate([
@@ -171,6 +218,18 @@ class UsuarioController extends Controller
         }
     }
 
+/**
+ * Nombre de la función: `getUserIdByUsername`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener el ID de un usuario basado en su nombre de usuario. Si el usuario no se encuentra,
+ * devuelve un mensaje de error con un código de estado 404.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function getUserIdByUsername($username)
     {
         $usuario = Usuario::where('username', $username)->first();
@@ -182,6 +241,18 @@ class UsuarioController extends Controller
         return response()->json(['id_usuario' => $usuario->id_usuario], 200);
     }
 
+/**
+ * Nombre de la función: `requestPasswordReset`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para solicitar el restablecimiento de la contraseña de un usuario. Valida el correo electrónico,
+ * genera un token de restablecimiento y envía un correo con el enlace de restablecimiento. Registra el token en la base de datos.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function requestPasswordReset(Request $request)
 {
     $request->validate([
@@ -209,7 +280,18 @@ class UsuarioController extends Controller
 
 }
 
-
+/**
+ * Nombre de la función: `resetPassword`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para restablecer la contraseña de un usuario utilizando un token de restablecimiento. Valida el token y
+ * la nueva contraseña, luego actualiza la contraseña del usuario en la base de datos y elimina el token.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function resetPassword(Request $request)
     {
         $request->validate([

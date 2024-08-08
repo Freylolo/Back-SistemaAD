@@ -117,10 +117,6 @@ class ControlAccesoController extends Controller
         // Devolver la respuesta con el registro actualizado
         return response()->json($controlAcceso);
     }
-    
-
-
-    
 
     /**
      * Remove the specified resource from storage.

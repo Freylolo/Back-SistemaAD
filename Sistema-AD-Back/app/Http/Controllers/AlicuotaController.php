@@ -96,7 +96,17 @@ class AlicuotaController extends Controller
         return response()->json(null, 204);
     }
 
-    // Método para marcar una alícuota como pagada y recalcular la deuda
+/**
+ * Nombre de la función: `marcarPago`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para marcar una alícuota como pagada y recalcular la deuda.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function marcarPago($id_alicuota)
     {
         $alicuota = Alicuota::findOrFail($id_alicuota);
@@ -111,6 +121,17 @@ class AlicuotaController extends Controller
         return response()->json(['message' => 'Pago registrado exitosamente', 'totalAdeudado' => $totalAdeudado], 200);
     }    
 
+/**
+ * Nombre de la función: `getAlicuotasByIdResidente`
+ * Autor: Freya López - Flopezl@ug.edu.ec
+ * Versión: 1.0
+ * Fecha: 2024-08-07
+ * 
+ * Resumen: Método para obtener todas las alícuotas asociadas a un residente específico.
+ * 
+ * Cambios:
+ * - Versión 1.0: Creación inicial de la función.
+ */
     public function getAlicuotasByIdResidente($id_residente)
     {
     $alicuotas = Alicuota::where('id_residente', $id_residente)->get();
