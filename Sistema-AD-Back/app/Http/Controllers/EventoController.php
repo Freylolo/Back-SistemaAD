@@ -99,9 +99,32 @@ class EventoController extends Controller
 
         $evento = Evento::create($data);
 
-        return response()->json($evento, 201);
+         // Si hay datos de invitados, enviar el id del evento al controlador de invitados
+    if ($request->has('invitados')) {
+        $invitadosData = $request->input('invitados');
+        $response = $this->storeInvitados($evento->id, $invitadosData);
+
+        if ($response->status() !== 201) {
+            return response()->json(['error' => 'Error al guardar los invitados'], $response->status());
+        }
     }
 
+    return response()->json($evento, 201);
+}
+
+private function storeInvitados($eventoId, $invitadosData)
+{
+    $url = url('/api/invitados'); 
+    $client = new \GuzzleHttp\Client();
+    $response = $client->post($url, [
+        'json' => [
+            'evento_id' => $eventoId,
+            'invitados' => $invitadosData,
+        ],
+    ]);
+
+    return $response;
+}
 
     /**
      * Display the specified resource.

@@ -9,6 +9,7 @@ use App\Http\Controllers\QRCodeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\WsmsController;
+use App\Http\Controllers\InvitadoController;
 
 
 use Illuminate\Http\Request;
@@ -122,4 +123,5 @@ Route::post('/usuarios/restablecer-contrasena', [UsuarioController::class, 'rese
 Route::post('/send-sms', [SmsController::class, 'sendSms']);
 Route::post('/send-whatsapp', [WsmsController::class, 'sendWhatsAppMessage']);
 
-
+Route::post('/invitados', [InvitadoController::class, 'store']);
+Route::get('/eventos/{evento_id}/invitados', [InvitadoController::class, 'getInvitadosByEvento']);
