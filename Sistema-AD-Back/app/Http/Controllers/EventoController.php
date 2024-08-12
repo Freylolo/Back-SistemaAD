@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Usuario;
 use App\Models\Residente;
+use App\Http\Controllers\InvitadoController;
 
 
 class EventoController extends Controller

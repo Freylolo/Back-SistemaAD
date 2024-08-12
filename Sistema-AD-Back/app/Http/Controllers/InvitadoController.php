@@ -15,10 +15,12 @@ class InvitadoController extends Controller
     // Validar los datos de entrada
     $data = $request->validate([
         'evento_id' => 'required|exists:eventos,id_evento',
+        'fecha_evento' => 'required|date',
+        'hora_evento' => 'required|string',
         'invitados' => 'required|array',
         'invitados.*.nombres' => 'required|string|max:255',
         'invitados.*.apellidos' => 'required|string|max:255',
-        'invitados.*.cedula' => 'required|string|max:20|unique:invitados,cedula',
+        'invitados.*.cedula' => 'required|string|max:20',
         'invitados.*.placa' => 'nullable|string|max:10',
         'invitados.*.observaciones' => 'nullable|string',
     ]);
@@ -27,6 +29,8 @@ class InvitadoController extends Controller
     foreach ($data['invitados'] as $invitado) {
         Invitado::create([
             'evento_id' => $data['evento_id'], // Asociar el evento a los invitados
+            'fecha_evento' => $data['fecha_evento'],
+            'hora_evento' => $data['hora_evento'],
             'nombres' => $invitado['nombres'],
             'apellidos' => $invitado['apellidos'],
             'cedula' => $invitado['cedula'],
@@ -37,6 +41,7 @@ class InvitadoController extends Controller
 
     return response()->json(['message' => 'Datos guardados exitosamente'], 201);
 }
+
 
 public function getInvitadosByEvento($evento_id)
 {
@@ -50,9 +55,21 @@ public function getInvitadosByEvento($evento_id)
     // Obtener los invitados asociados al evento
     $invitados = Invitado::where('evento_id', $evento_id)->get();
 
+    // Actualizar el estado de los invitados basado en ControlAcceso
+    foreach ($invitados as $invitado) {
+        $existeEnControlAcceso = ControlAcceso::where('cedula', $invitado->cedula)
+            ->where('placas', $invitado->placa)
+            ->where('nombre', $invitado->nombres)
+            ->where('apellidos', $invitado->apellidos)
+            ->whereDate('fecha_ingreso', $invitado->fecha_evento)
+            ->exists();
+
+        $estado = $existeEnControlAcceso ? 'Ingresado' : 'Sin ingreso';
+        $invitado->update(['estado' => $estado]);
+    }
+
     return response()->json($invitados, 200);
 }
-
 
 }
 

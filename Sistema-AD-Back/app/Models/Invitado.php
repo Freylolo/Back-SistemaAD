@@ -15,7 +15,8 @@ class Invitado extends Model
 
     protected $fillable = [
         'evento_id',
-        'control_acceso_id',
+        'fecha_evento',
+        'hora_evento',
         'nombres',
         'apellidos',
         'cedula',
