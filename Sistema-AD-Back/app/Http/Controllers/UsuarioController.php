@@ -269,7 +269,7 @@ class UsuarioController extends Controller
     $user->update(['password_reset_token' => $token]);
 
     // Construir el enlace de restablecimiento usando la variable de entorno FRONTEND_URL
-    $resetLink =('http://localhost:4200') . '/reset-password?token=' . $token;
+    $resetLink =('https://sistema-camino-real.vercel.app/') . '/reset-password?token=' . $token;
     \Log::info('FRONTEND_URL:', ['url' => env('FRONTEND_URL')]);
     \Log::info('Reset Link:', ['link' => $resetLink]);
 
