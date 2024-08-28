@@ -11,16 +11,63 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('alicuotas', function (Blueprint $table) {
-            $table->id('id_alicuota');
-            $table->unsignedBigInteger('id_residente');
-            $table->date('fecha');
-            $table->enum('mes', ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']);
-            $table->decimal('monto_por_cobrar', 10, 2);
-            $table->tinyInteger('pagado')->default(0);
+        // Primero, crea las tablas que no tienen claves foráneas.
+        Schema::create('failed_jobs', function (Blueprint $table) {
+            $table->id();
+            $table->string('uuid');
+            $table->text('connection');
+            $table->text('queue');
+            $table->longText('payload');
+            $table->longText('exception');
+            $table->timestamp('failed_at')->useCurrent();
+        });
+
+        Schema::create('password_reset_tokens', function (Blueprint $table) {
+            $table->string('email');
+            $table->string('token');
+            $table->timestamp('created_at')->nullable();
+            $table->primary(['email', 'token']);
+        });
+
+        // Luego, crea las tablas con claves foráneas que no tienen dependencias circulares.
+        Schema::create('usuarios', function (Blueprint $table) {
+            $table->id('id_usuario');
+            $table->enum('perfil', ['Seguridad', 'Administracion', 'Residente', 'Propietario'])->nullable();
+            $table->string('username');
+            $table->string('nombre');
+            $table->string('apellido');
+            $table->string('correo_electronico');
+            $table->string('contrasena');
+            $table->string('password_reset_token')->nullable();
+            $table->enum('rol', ['Administracion', 'Seguridad', 'Residente']);
             $table->timestamps();
 
-            $table->foreign('id_residente')->references('id_residente')->on('residentes')->onDelete('cascade');
+            $table->unique('correo_electronico');
+            $table->unique('username');
+        });
+
+        Schema::create('residentes', function (Blueprint $table) {
+            $table->id('id_residente');
+            $table->unsignedBigInteger('id_usuario');
+            $table->string('cedula');
+            $table->enum('sexo', ['Masculino', 'Femenino']);
+            $table->enum('perfil', ['Residente', 'Propietario']);
+            $table->string('direccion');
+            $table->string('solar');
+            $table->decimal('m2', 10, 2);
+            $table->string('celular');
+            $table->integer('cantidad_vehiculos');
+            $table->string('vehiculo1_placa')->nullable();
+            $table->text('vehiculo1_observaciones')->nullable();
+            $table->string('vehiculo2_placa')->nullable();
+            $table->text('vehiculo2_observaciones')->nullable();
+            $table->string('vehiculo3_placa')->nullable();
+            $table->text('vehiculo3_observaciones')->nullable();
+            $table->text('observaciones')->nullable();
+            $table->timestamps();
+
+            $table->unique('cedula');
+            $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
         });
 
         Schema::create('control_acceso', function (Blueprint $table) {
@@ -62,16 +109,6 @@ return new class extends Migration
             $table->foreign('id_residente')->references('id_residente')->on('residentes')->onDelete('cascade');
         });
 
-        Schema::create('failed_jobs', function (Blueprint $table) {
-            $table->id();
-            $table->string('uuid');
-            $table->text('connection');
-            $table->text('queue');
-            $table->longText('payload');
-            $table->longText('exception');
-            $table->timestamp('failed_at')->useCurrent();
-        });
-
         Schema::create('invitados', function (Blueprint $table) {
             $table->id('id_invitado');
             $table->unsignedBigInteger('evento_id');
@@ -90,13 +127,6 @@ return new class extends Migration
             $table->foreign('control_acceso_id')->references('id_acceso')->on('control_acceso')->onDelete('set null');
         });
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email');
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-            $table->primary(['email', 'token']);
-        });
-
         Schema::create('personal', function (Blueprint $table) {
             $table->id('id_personal');
             $table->unsignedBigInteger('id_usuario');
@@ -111,44 +141,16 @@ return new class extends Migration
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
         });
 
-        Schema::create('residentes', function (Blueprint $table) {
-            $table->id('id_residente');
-            $table->unsignedBigInteger('id_usuario');
-            $table->string('cedula');
-            $table->enum('sexo', ['Masculino', 'Femenino']);
-            $table->enum('perfil', ['Residente', 'Propietario']);
-            $table->string('direccion');
-            $table->string('solar');
-            $table->decimal('m2', 10, 2);
-            $table->string('celular');
-            $table->integer('cantidad_vehiculos');
-            $table->string('vehiculo1_placa')->nullable();
-            $table->text('vehiculo1_observaciones')->nullable();
-            $table->string('vehiculo2_placa')->nullable();
-            $table->text('vehiculo2_observaciones')->nullable();
-            $table->string('vehiculo3_placa')->nullable();
-            $table->text('vehiculo3_observaciones')->nullable();
-            $table->text('observaciones')->nullable();
+        Schema::create('alicuotas', function (Blueprint $table) {
+            $table->id('id_alicuota');
+            $table->unsignedBigInteger('id_residente');
+            $table->date('fecha');
+            $table->enum('mes', ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']);
+            $table->decimal('monto_por_cobrar', 10, 2);
+            $table->tinyInteger('pagado')->default(0);
             $table->timestamps();
 
-            $table->unique('cedula');
-            $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
-        });
-
-        Schema::create('usuarios', function (Blueprint $table) {
-            $table->id('id_usuario');
-            $table->enum('perfil', ['Seguridad', 'Administracion', 'Residente', 'Propietario'])->nullable();
-            $table->string('username');
-            $table->string('nombre');
-            $table->string('apellido');
-            $table->string('correo_electronico');
-            $table->string('contrasena');
-            $table->string('password_reset_token')->nullable();
-            $table->enum('rol', ['Administracion', 'Seguridad', 'Residente']);
-            $table->timestamps();
-
-            $table->unique('correo_electronico');
-            $table->unique('username');
+            $table->foreign('id_residente')->references('id_residente')->on('residentes')->onDelete('cascade');
         });
     }
 
@@ -167,5 +169,4 @@ return new class extends Migration
         Schema::dropIfExists('residentes');
         Schema::dropIfExists('usuarios');
     }
-
 };
