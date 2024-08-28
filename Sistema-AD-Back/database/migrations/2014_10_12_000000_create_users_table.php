@@ -141,17 +141,19 @@ return new class extends Migration
             $table->foreign('id_usuario')->references('id_usuario')->on('usuarios')->onDelete('cascade');
         });
 
-        Schema::create('alicuotas', function (Blueprint $table) {
-            $table->id('id_alicuota');
-            $table->unsignedBigInteger('id_residente');
-            $table->date('fecha');
-            $table->enum('mes', ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']);
-            $table->decimal('monto_por_cobrar', 10, 2);
-            $table->tinyInteger('pagado')->default(0);
-            $table->timestamps();
+        if (!Schema::hasTable('alicuotas')) {
+            Schema::create('alicuotas', function (Blueprint $table) {
+                $table->id('id_alicuota');
+                $table->unsignedBigInteger('id_residente');
+                $table->date('fecha');
+                $table->enum('mes', ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']);
+                $table->decimal('monto_por_cobrar', 10, 2);
+                $table->tinyInteger('pagado')->default(0);
+                $table->timestamps();
 
-            $table->foreign('id_residente')->references('id_residente')->on('residentes')->onDelete('cascade');
-        });
+                $table->foreign('id_residente')->references('id_residente')->on('residentes')->onDelete('cascade');
+            });
+        }
     }
 
     /**
