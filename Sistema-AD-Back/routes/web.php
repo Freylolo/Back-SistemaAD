@@ -23,17 +23,15 @@ Route::get('/', function () {
 
 // Ruta para ver los documentos
 Route::get('uploads/{filename}', function ($filename) {
-    // Intenta obtener el archivo desde el disco 'public'
-    $file = Storage::disk('public')->get('uploads/' . $filename);
+    $path = public_path('uploads/' . $filename);
 
-    if (!$file) {
-        abort(404, 'Archivo no encontrado.');
+    if (!File::exists($path)) {
+        abort(404);
     }
 
-    // Obtén el tipo MIME del archivo
-    $type = Storage::disk('public')->mimeType('uploads/' . $filename);
+    $file = File::get($path);
+    $type = File::mimeType($path);
 
-    // Devuelve la respuesta con el archivo y el tipo MIME
     return response($file, 200)->header("Content-Type", $type);
 });
 
