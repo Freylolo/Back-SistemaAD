@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://back-sistemaad-production.up.railway.app'),
     'frontend_url' => env('FRONTEND_URL'),
 
     'asset_url' => env('ASSET_URL'),
