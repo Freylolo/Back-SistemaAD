@@ -240,8 +240,8 @@ private function storeInvitados($eventoId, $invitadosData)
  * Cambios:
  * - Versión 1.0: Creación inicial de la función.
  */
-    public function downloadFile($filename)
-    {
+   public function downloadFile($filename)
+   {
     $filename = urldecode($filename); // Decodifica el nombre del archivo
     $path = storage_path('app/public/uploads/' . $filename); // Usa storage_path en lugar de public_path
 
@@ -251,6 +251,7 @@ private function storeInvitados($eventoId, $invitadosData)
 
     return response()->download($path);
    }
+
 
 
 /**
