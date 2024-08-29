@@ -240,10 +240,10 @@ private function storeInvitados($eventoId, $invitadosData)
  * Cambios:
  * - Versión 1.0: Creación inicial de la función.
  */
-   public function downloadFile($filename)
+    public function downloadFile($filename)
    {
     $filename = urldecode($filename); // Decodifica el nombre del archivo
-    $path = storage_path('app/public/uploads/' . $filename); // Usa storage_path en lugar de public_path
+    $path = public_path('uploads/' . $filename);
 
     if (!file_exists($path)) {
         return response()->json(['error' => 'Archivo no encontrado.'], 404);
@@ -251,6 +251,7 @@ private function storeInvitados($eventoId, $invitadosData)
 
     return response()->download($path);
    }
+
 
 
 
