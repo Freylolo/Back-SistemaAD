@@ -242,15 +242,16 @@ private function storeInvitados($eventoId, $invitadosData)
  */
     public function downloadFile($filename)
     {
-        $filename = urldecode($filename); // Decodifica el nombre del archivo
-        $path = public_path('uploads/' . $filename);
+    $filename = urldecode($filename); // Decodifica el nombre del archivo
+    $path = storage_path('app/public/uploads/' . $filename); // Cambia public_path por storage_path
 
-        if (!file_exists($path)) {
-            return response()->json(['error' => 'Archivo no encontrado.'], 404);
-        }
-
-        return response()->download($path);
+    if (!file_exists($path)) {
+        return response()->json(['error' => 'Archivo no encontrado.'], 404);
     }
+
+    return response()->download($path);
+    }
+
 
 /**
  * Nombre de la función: `updateEstado`
