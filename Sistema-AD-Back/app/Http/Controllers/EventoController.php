@@ -240,20 +240,20 @@ private function storeInvitados($eventoId, $invitadosData)
  * Cambios:
  * - Versión 1.0: Creación inicial de la función.
  */
-    public function downloadFile($filename)
+   public function downloadFile($filename)
    {
     $filename = urldecode($filename); // Decodifica el nombre del archivo
     $path = public_path('uploads/' . $filename);
 
     if (!file_exists($path)) {
+        \Log::error('Archivo no encontrado:', ['path' => $path]);
         return response()->json(['error' => 'Archivo no encontrado.'], 404);
     }
 
+    \Log::info('Archivo encontrado, procediendo a la descarga:', ['path' => $path]);
+
     return response()->download($path);
-   }
-
-
-
+  }
 
 /**
  * Nombre de la función: `updateEstado`
