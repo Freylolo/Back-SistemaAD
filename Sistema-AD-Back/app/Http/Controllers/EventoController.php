@@ -92,11 +92,12 @@ class EventoController extends Controller
         if ($request->hasFile('listado_evento')) {
             $file = $request->file('listado_evento');
             $filename = time() . '-' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $filename);
+            // Usa el disco `public` configurado en filesystems.php
+            $path = $file->storeAs('uploads', $filename, 'public');
             $data['listado_evento'] = $filename;
         } else {
             $data['listado_evento'] = null;
-        }
+        }        
 
         $evento = Evento::create($data);
 
