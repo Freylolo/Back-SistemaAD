@@ -109,7 +109,8 @@ Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad'
 Route::post('/enviar-correo', [QRCodeController::class, 'enviarCorreo']);
 
 //ruta para descargar archivo evento
-Route::get('/uploads/{filename}', [EventoController::class, 'downloadFile'])->name('downloadFile');
+Route::get('api/uploads/{filename}', [EventoController::class, 'downloadFile'])->name('downloadFile');
+
 
 Route::post('/login', [AuthController::class, 'login']);
 
