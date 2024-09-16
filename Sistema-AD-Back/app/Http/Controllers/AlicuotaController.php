@@ -138,5 +138,14 @@ class AlicuotaController extends Controller
     return response()->json($alicuotas, 200);
     }
 
+    public function verificarAlicuota($id_residente, $mes)
+{
+    // Verifica si existe una alícuota para el residente en el mes especificado
+    $existe = Alicuota::where('id_residente', $id_residente)
+                ->where('mes', $mes)
+                ->exists();
+
+    return response()->json($existe, 200); // Devuelve true si existe, false si no
+}
 
 }

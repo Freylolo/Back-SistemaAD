@@ -109,8 +109,7 @@ Route::get('/usuarios/seguridad', [UsuarioController::class, 'usuariosSeguridad'
 Route::post('/enviar-correo', [QRCodeController::class, 'enviarCorreo']);
 
 //ruta para descargar archivo evento
-Route::get('api/uploads/{filename}', [EventoController::class, 'downloadFile'])->name('downloadFile');
-
+Route::get('/uploads/{filename}', [EventoController::class, 'downloadFile'])->name('downloadFile');
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -126,3 +125,5 @@ Route::post('/send-whatsapp', [WsmsController::class, 'sendWhatsAppMessage']);
 
 Route::post('/invitados', [InvitadoController::class, 'store']);
 Route::get('/eventos/{evento_id}/invitados', [InvitadoController::class, 'getInvitadosByEvento']);
+
+Route::get('alicuotas/verificar/{id_residente}/{mes}', [AlicuotaController::class, 'verificarAlicuota']);
