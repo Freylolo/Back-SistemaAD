@@ -15,12 +15,12 @@ class InvitadoController extends Controller
     // Validar los datos de entrada
     $data = $request->validate([
         'evento_id' => 'required|exists:eventos,id_evento',
-        'fecha_evento' => 'required|date',
-        'hora_evento' => 'required|string',
+        'fecha_evento' => 'nullable|date',
+        'hora_evento' => 'nullable|string',
         'invitados' => 'required|array',
-        'invitados.*.nombres' => 'required|string|max:255',
-        'invitados.*.apellidos' => 'required|string|max:255',
-        'invitados.*.cedula' => 'required|string|max:20',
+        'invitados.*.nombres' => 'nullable|string|max:255',
+        'invitados.*.apellidos' => 'nullable|string|max:255',
+        'invitados.*.cedula' => 'nullable|string|max:20',
         'invitados.*.placa' => 'nullable|string|max:10',
         'invitados.*.observaciones' => 'nullable|string',
     ]);
